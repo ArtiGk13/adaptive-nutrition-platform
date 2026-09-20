@@ -1,0 +1,239 @@
+from datetime import datetime
+
+from pydantic import BaseModel
+
+from app.agents.coordinator import CycleResult
+from app.domain.assessment import AssessmentFlag, AssessmentResult
+from app.domain.decisions import ActionType, AdaptationAction, DecisionType, SupervisorDecision
+from app.domain.log_entry import ActivityLogEntry, LogEntry, MealLogEntry, WeightLogEntry
+from app.domain.nutrition_plan import NutritionPlan
+from app.domain.user_profile import ActivityLevel, GoalType, Role, Sex, UserProfile
+
+
+class UserCreate(BaseModel):
+    name: str
+    age: int
+    sex: Sex
+    height_cm: float
+    weight_kg: float
+    activity_level: ActivityLevel
+    goal_type: GoalType
+    role: Role = Role.USER
+
+    def to_domain(self) -> UserProfile:
+        return UserProfile(
+            name=self.name,
+            age=self.age,
+            sex=self.sex,
+            height_cm=self.height_cm,
+            weight_kg=self.weight_kg,
+            activity_level=self.activity_level,
+            goal_type=self.goal_type,
+            role=self.role,
+        )
+
+
+class UserRead(BaseModel):
+    user_id: int
+    name: str
+    age: int
+    sex: Sex
+    height_cm: float
+    weight_kg: float
+    activity_level: ActivityLevel
+    goal_type: GoalType
+    role: Role
+    adherence_level: float
+    difficulties: list[str]
+    current_plan_id: int | None
+
+    @classmethod
+    def from_domain(cls, profile: UserProfile) -> "UserRead":
+        return cls(
+            user_id=profile.user_id,
+            name=profile.name,
+            age=profile.age,
+            sex=profile.sex,
+            height_cm=profile.height_cm,
+            weight_kg=profile.weight_kg,
+            activity_level=profile.activity_level,
+            goal_type=profile.goal_type,
+            role=profile.role,
+            adherence_level=profile.adherence_level,
+            difficulties=profile.difficulties,
+            current_plan_id=profile.current_plan_id,
+        )
+
+
+class MacroTargetsRead(BaseModel):
+    protein_g: int
+    carbs_g: int
+    fat_g: int
+
+
+class MealSlotRead(BaseModel):
+    slot_name: str
+    target_kcal: int
+
+
+class PlanRead(BaseModel):
+    plan_id: int | None
+    user_id: int
+    version: int
+    calorie_target: int
+    macro_targets: MacroTargetsRead
+    meal_structure: list[MealSlotRead]
+    status: str
+    rationale: str
+
+    @classmethod
+    def from_domain(cls, plan: NutritionPlan) -> "PlanRead":
+        return cls(
+            plan_id=plan.plan_id,
+            user_id=plan.user_id,
+            version=plan.version,
+            calorie_target=plan.calorie_target,
+            macro_targets=MacroTargetsRead(**vars(plan.macro_targets)),
+            meal_structure=[MealSlotRead(**vars(slot)) for slot in plan.meal_structure],
+            status=plan.status.value,
+            rationale=plan.rationale,
+        )
+
+
+class MealLogCreate(BaseModel):
+    timestamp: datetime
+    meal_slot: str
+    food_description: str
+    estimated_kcal: int
+    estimated_macros: dict[str, int] = {}
+
+    def to_domain(self, user_id: int) -> MealLogEntry:
+        return MealLogEntry(
+            user_id=user_id,
+            timestamp=self.timestamp,
+            meal_slot=self.meal_slot,
+            food_description=self.food_description,
+            estimated_kcal=self.estimated_kcal,
+            estimated_macros=self.estimated_macros,
+        )
+
+
+class WeightLogCreate(BaseModel):
+    timestamp: datetime
+    weight_kg: float
+
+    def to_domain(self, user_id: int) -> WeightLogEntry:
+        return WeightLogEntry(user_id=user_id, timestamp=self.timestamp, weight_kg=self.weight_kg)
+
+
+class ActivityLogCreate(BaseModel):
+    timestamp: datetime
+    activity_type: str
+    duration_min: int
+    estimated_kcal_burned: int
+
+    def to_domain(self, user_id: int) -> ActivityLogEntry:
+        return ActivityLogEntry(
+            user_id=user_id,
+            timestamp=self.timestamp,
+            activity_type=self.activity_type,
+            duration_min=self.duration_min,
+            estimated_kcal_burned=self.estimated_kcal_burned,
+        )
+
+
+class LogRead(BaseModel):
+    log_id: int | None
+    user_id: int
+    timestamp: datetime
+    type: str
+    details: dict
+
+    @classmethod
+    def from_domain(cls, entry: LogEntry) -> "LogRead":
+        details = {
+            key: value
+            for key, value in vars(entry).items()
+            if key not in {"log_id", "user_id", "timestamp", "type"}
+        }
+        return cls(
+            log_id=entry.log_id,
+            user_id=entry.user_id,
+            timestamp=entry.timestamp,
+            type=entry.type.value,
+            details=details,
+        )
+
+
+class AssessmentRead(BaseModel):
+    assessment_id: int | None
+    plan_id: int
+    adherence_score: float
+    average_daily_kcal: float
+    deviations: list[str]
+    detected_difficulties: list[str]
+    proposed_flag: AssessmentFlag
+
+    @classmethod
+    def from_domain(cls, assessment: AssessmentResult) -> "AssessmentRead":
+        return cls(
+            assessment_id=assessment.assessment_id,
+            plan_id=assessment.plan_id,
+            adherence_score=assessment.adherence_score,
+            average_daily_kcal=assessment.average_daily_kcal,
+            deviations=assessment.deviations,
+            detected_difficulties=assessment.detected_difficulties,
+            proposed_flag=assessment.proposed_flag,
+        )
+
+
+class ActionRead(BaseModel):
+    action_type: ActionType
+    reason: str
+
+    @classmethod
+    def from_domain(cls, action: AdaptationAction) -> "ActionRead":
+        return cls(action_type=action.action_type, reason=action.reason)
+
+
+class DecisionRead(BaseModel):
+    decision_id: int | None
+    decision_type: DecisionType
+    approved: bool
+    guardrail_checks_passed: bool
+    failed_checks: list[str]
+    notes: str
+
+    @classmethod
+    def from_domain(cls, decision: SupervisorDecision) -> "DecisionRead":
+        return cls(
+            decision_id=decision.decision_id,
+            decision_type=decision.decision_type,
+            approved=decision.approved,
+            guardrail_checks_passed=decision.guardrail_checks_passed,
+            failed_checks=decision.failed_checks,
+            notes=decision.notes,
+        )
+
+
+class PlanCreateResponse(BaseModel):
+    plan: PlanRead | None
+    supervisor_decision: DecisionRead
+
+
+class CycleResponse(BaseModel):
+    plan: PlanRead
+    assessment: AssessmentRead
+    action: ActionRead
+    supervisor_decision: DecisionRead
+    feedback_text: str | None
+
+    @classmethod
+    def from_domain(cls, result: CycleResult) -> "CycleResponse":
+        return cls(
+            plan=PlanRead.from_domain(result.plan),
+            assessment=AssessmentRead.from_domain(result.assessment),
+            action=ActionRead.from_domain(result.action),
+            supervisor_decision=DecisionRead.from_domain(result.decision),
+            feedback_text=result.feedback_text,
+        )
