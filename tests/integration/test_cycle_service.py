@@ -78,6 +78,19 @@ async def test_cycle_flags_referral_for_unsafe_profile(session, sample_profile):
     assert result.plan.version == 1
 
 
+@pytest.mark.parametrize("age", [16, 70])
+async def test_onboarding_refuses_users_outside_supported_age(session, sample_profile, age):
+    sample_profile.age = age
+    user = repository.create_user(session, sample_profile)
+
+    plan, decision = await cycle_service.create_initial_plan(session, user.user_id)
+
+    assert plan is None
+    assert decision.decision_type == DecisionType.FLAG_REFERRAL
+    assert "age_out_of_range" in decision.failed_checks
+    assert repository.get_active_plan(session, user.user_id) is None
+
+
 async def test_cycle_for_unknown_user_raises(session):
     with pytest.raises(LookupError):
         await cycle_service.run_cycle(session, 999)

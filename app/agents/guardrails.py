@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from app.config import settings
 from app.domain.log_entry import LogEntry, WeightLogEntry
 from app.domain.nutrition_plan import (
+    DRI_RANGES,
+    SUPPORTED_AGE_RANGE,
     NutritionPlan,
     calculate_bmr,
     calculate_tdee,
@@ -11,6 +13,7 @@ from app.domain.user_profile import GoalType, Sex, UserProfile
 
 MIN_HEALTHY_BMI = 18.5
 MAX_WEEKLY_LOSS_KG = 1.0
+MACRO_ROUNDING_TOLERANCE = 0.01
 
 
 @dataclass
@@ -78,10 +81,52 @@ def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> Guar
     return GuardrailResult(True, "suspicious_pattern", "Δεν εντοπίστηκε ύποπτο μοτίβο.")
 
 
+def check_supported_age(profile: UserProfile) -> GuardrailResult:
+    """The reference values the planner uses are defined for adults only (WHO, 2004).
+
+    Different classification tables apply over 65 (NEMO, 2019), and under 18 growth makes
+    them inapplicable, so the system must hand these users over instead of planning.
+    """
+    low, high = SUPPORTED_AGE_RANGE
+    if not (low <= profile.age <= high):
+        return GuardrailResult(
+            passed=False,
+            code="age_out_of_range",
+            message=(
+                f"Ηλικία {profile.age} ετών εκτός του υποστηριζόμενου εύρους {low}-{high}. "
+                "Απαιτείται αξιολόγηση από ειδικό."
+            ),
+        )
+    return GuardrailResult(True, "age_out_of_range", "Ηλικία εντός υποστηριζόμενου εύρους.")
+
+
+def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
+    """Macros must stay inside the acceptable distribution ranges (DRIs, 2010)."""
+    shares = {
+        "protein": plan.macro_targets.protein_g * 4 / plan.calorie_target,
+        "fat": plan.macro_targets.fat_g * 9 / plan.calorie_target,
+        "carbs": plan.macro_targets.carbs_g * 4 / plan.calorie_target,
+    }
+    breaches = [
+        f"{name} {shares[name]:.0%} εκτός {low:.0%}-{high:.0%}"
+        for name, (low, high) in DRI_RANGES.items()
+        if not (low - MACRO_ROUNDING_TOLERANCE <= shares[name] <= high + MACRO_ROUNDING_TOLERANCE)
+    ]
+    if breaches:
+        return GuardrailResult(
+            passed=False,
+            code="macro_distribution",
+            message="Κατανομή μακροθρεπτικών εκτός συνιστώμενων ορίων: " + ", ".join(breaches),
+        )
+    return GuardrailResult(True, "macro_distribution", "Κατανομή μακροθρεπτικών εντός ορίων.")
+
+
 def run_plan_checks(plan: NutritionPlan, profile: UserProfile) -> list[GuardrailResult]:
     return [
+        check_supported_age(profile),
         check_min_calories(plan.calorie_target, profile.sex),
         check_max_deficit_rate(plan.calorie_target, profile),
+        check_macro_distribution(plan),
     ]
 
 

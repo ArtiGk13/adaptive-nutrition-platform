@@ -26,6 +26,15 @@ PROTEIN_G_PER_KG: dict[GoalType, float] = {
 
 FAT_CALORIE_RATIO = 0.28
 
+# Acceptable Macronutrient Distribution Ranges (DRIs, 2010), as shares of total energy.
+DRI_RANGES: dict[str, tuple[float, float]] = {
+    "protein": (0.10, 0.35),
+    "fat": (0.20, 0.35),
+    "carbs": (0.45, 0.65),
+}
+
+SUPPORTED_AGE_RANGE = (18, 65)
+
 MEAL_SLOT_RATIOS: dict[str, float] = {
     "breakfast": 0.25,
     "lunch": 0.35,
@@ -85,12 +94,44 @@ def calculate_calorie_target(profile: UserProfile) -> int:
     return round(tdee * (1 + adjustment))
 
 
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
 def calculate_macro_targets(calorie_target: int, profile: UserProfile) -> MacroTargets:
-    protein_g = round(PROTEIN_G_PER_KG[profile.goal_type] * profile.weight_kg)
-    fat_g = round((calorie_target * FAT_CALORIE_RATIO) / 9)
-    remaining_kcal = calorie_target - (protein_g * 4) - (fat_g * 9)
-    carbs_g = max(0, round(remaining_kcal / 4))
-    return MacroTargets(protein_g=protein_g, carbs_g=carbs_g, fat_g=fat_g)
+    """Protein from body weight and fat as a share of energy, held inside the DRI ranges.
+
+    Protein prescribed per kilogram inflates as a share of energy when calories are cut,
+    which pushes carbohydrates below the recommended range. Energy is therefore moved back
+    out of protein first, then fat, until carbohydrates reach their lower bound.
+    """
+    protein_low, protein_high = (ratio * calorie_target for ratio in DRI_RANGES["protein"])
+    fat_low, fat_high = (ratio * calorie_target for ratio in DRI_RANGES["fat"])
+    carbs_low, carbs_high = (ratio * calorie_target for ratio in DRI_RANGES["carbs"])
+
+    protein_kcal = _clamp(
+        PROTEIN_G_PER_KG[profile.goal_type] * profile.weight_kg * 4, protein_low, protein_high
+    )
+    fat_kcal = _clamp(calorie_target * FAT_CALORIE_RATIO, fat_low, fat_high)
+    carbs_kcal = calorie_target - protein_kcal - fat_kcal
+
+    if carbs_kcal < carbs_low:
+        shortfall = carbs_low - carbs_kcal
+        from_protein = min(shortfall, protein_kcal - protein_low)
+        protein_kcal -= from_protein
+        fat_kcal -= min(shortfall - from_protein, fat_kcal - fat_low)
+    elif carbs_kcal > carbs_high:
+        surplus = carbs_kcal - carbs_high
+        to_protein = min(surplus, protein_high - protein_kcal)
+        protein_kcal += to_protein
+        fat_kcal += min(surplus - to_protein, fat_high - fat_kcal)
+
+    carbs_kcal = calorie_target - protein_kcal - fat_kcal
+    return MacroTargets(
+        protein_g=round(protein_kcal / 4),
+        carbs_g=round(carbs_kcal / 4),
+        fat_g=round(fat_kcal / 9),
+    )
 
 
 def build_meal_structure(calorie_target: int) -> list[MealSlot]:

@@ -71,7 +71,7 @@ class SupervisorAgent:
                 plan_version=plan_version,
             )
 
-        referral_codes = {"underweight_weight_loss", "rapid_weight_loss"}
+        referral_codes = {"underweight_weight_loss", "rapid_weight_loss", "age_out_of_range"}
         needs_referral = any(failure.code in referral_codes for failure in failures)
         return self._build(
             profile=profile,
