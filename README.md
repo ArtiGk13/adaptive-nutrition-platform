@@ -62,8 +62,24 @@ Nutrition calculations (Mifflin-St Jeor BMR, calorie target, macros), the adapta
 the guardrails are **fully deterministic in code** (`app/domain/`, `app/agents/`). The LLM
 (`app/llm/client.py`) is used only to phrase feedback and educational content.
 
-The provider is set in `.env` (`LLM_PROVIDER`). The default is `mock`, which returns canned
-text, so the whole system and its tests run without any API key.
+The provider is set in `.env` (`LLM_PROVIDER`):
+
+- `mock` (default) — canned text, so the whole system and its test suite run with no model
+- `ollama` — a model served locally by [Ollama](https://ollama.com), keeping all data on the
+  machine. No data is sent to any external service.
+
+```bash
+ollama pull qwen2.5:7b
+# then set LLM_PROVIDER=ollama in .env
+```
+
+Generation is **not on the critical path**: if the model is unreachable, the Tutor logs a
+warning and returns no text, while the plan, assessment and Supervisor decision still complete
+normally. The test suite forces the `mock` provider regardless of `.env`, so tests never depend
+on a running model.
+
+Generating feedback on a local 7B model takes roughly 3–14 seconds depending on whether the
+model is already loaded, which is the main cost of keeping inference local.
 
 ### Clinical validation
 
@@ -158,6 +174,6 @@ Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configure
 
 ## Next steps
 
-- Wire a local LLM provider in `app/llm/client.py`
 - Endpoints for the dietitian role (user overview, content management)
-- Expert review of usability and of the quality of generated suggestions
+- Blind expert review of generated suggestions, mixing adaptive and fixed outputs
+- Optional: derive a target weight from the ideal-BMI range, which the system currently lacks

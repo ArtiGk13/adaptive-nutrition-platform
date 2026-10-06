@@ -6,10 +6,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.config import settings
 from app.db.database import get_session
 from app.db.models import Base
 from app.domain.log_entry import MealLogEntry
 from app.domain.user_profile import ActivityLevel, GoalType, Sex, UserProfile
+
+
+@pytest.fixture(autouse=True)
+def force_mock_llm(monkeypatch):
+    """Keep the suite hermetic: never reach a real model, whatever .env says."""
+    monkeypatch.setattr(settings, "llm_provider", "mock")
 
 
 @pytest.fixture
