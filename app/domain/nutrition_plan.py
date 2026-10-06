@@ -35,6 +35,20 @@ DRI_RANGES: dict[str, tuple[float, float]] = {
 
 SUPPORTED_AGE_RANGE = (18, 65)
 
+# Desirable BMI used to derive a target body weight. While the user is overweight or obese
+# the higher staged value applies: it is an *initial* target, not the end state. Once BMI
+# falls below the overweight threshold the target moves into the desirable range, so a plan
+# regenerated later naturally advances the staging.
+OVERWEIGHT_BMI = 25.0
+DESIRABLE_BMI_RANGE: dict[Sex, tuple[float, float]] = {
+    Sex.FEMALE: (21.3, 22.1),
+    Sex.MALE: (21.9, 22.4),
+}
+STAGED_BMI_WHEN_OVERWEIGHT: dict[Sex, float] = {
+    Sex.FEMALE: 22.4,
+    Sex.MALE: 22.7,
+}
+
 # Presentation default for spreading the daily target across meals. Unlike every other
 # constant here this one carries NO clinical backing: the reviewing dietitian did not
 # recognise meal-level distribution as standard practice. Treat it as a display choice.
@@ -71,6 +85,7 @@ class NutritionPlan:
     macro_targets: MacroTargets
     meal_structure: list[MealSlot]
     rationale: str
+    target_weight_kg: float | None = None
     version: int = 1
     plan_id: int | None = None
     status: PlanStatus = PlanStatus.ACTIVE
@@ -95,6 +110,19 @@ def calculate_calorie_target(profile: UserProfile) -> int:
     tdee = calculate_tdee(bmr, profile.activity_level)
     adjustment = GOAL_CALORIE_ADJUSTMENTS[profile.goal_type]
     return round(tdee * (1 + adjustment))
+
+
+def target_bmi_for(profile: UserProfile) -> float:
+    if profile.bmi >= OVERWEIGHT_BMI:
+        return STAGED_BMI_WHEN_OVERWEIGHT[profile.sex]
+    low, high = DESIRABLE_BMI_RANGE[profile.sex]
+    return (low + high) / 2
+
+
+def calculate_ideal_weight(profile: UserProfile) -> float:
+    """Target body weight derived from the desirable BMI for this user."""
+    height_m = profile.height_cm / 100
+    return round(target_bmi_for(profile) * height_m**2, 1)
 
 
 def _clamp(value: float, low: float, high: float) -> float:

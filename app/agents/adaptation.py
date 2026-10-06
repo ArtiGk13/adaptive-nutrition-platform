@@ -5,6 +5,7 @@ from app.domain.nutrition_plan import (
     NutritionPlan,
     build_meal_structure,
     calculate_calorie_target,
+    calculate_ideal_weight,
     calculate_macro_targets,
 )
 from app.domain.user_profile import GoalType, UserProfile
@@ -114,4 +115,5 @@ class AdaptationAgent:
             meal_structure=build_meal_structure(new_target),
             rationale=f"Revision of plan version {plan.version} based on logged intake.",
             sustainable_target_kcal=sustainable_target,
+            target_weight_kg=calculate_ideal_weight(profile),
         )

@@ -81,6 +81,7 @@ class PlanRead(BaseModel):
     user_id: int
     version: int
     calorie_target: int
+    target_weight_kg: float | None
     macro_targets: MacroTargetsRead
     meal_structure: list[MealSlotRead]
     status: str
@@ -93,6 +94,7 @@ class PlanRead(BaseModel):
             user_id=plan.user_id,
             version=plan.version,
             calorie_target=plan.calorie_target,
+            target_weight_kg=plan.target_weight_kg,
             macro_targets=MacroTargetsRead(**vars(plan.macro_targets)),
             meal_structure=[MealSlotRead(**vars(slot)) for slot in plan.meal_structure],
             status=plan.status.value,

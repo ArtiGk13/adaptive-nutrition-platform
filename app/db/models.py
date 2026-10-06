@@ -43,6 +43,7 @@ class NutritionPlanORM(Base):
     status: Mapped[str] = mapped_column(String(20), default="active")
     rationale: Mapped[str] = mapped_column(String(500), default="")
     sustainable_target_kcal: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    target_weight_kg: Mapped[float | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

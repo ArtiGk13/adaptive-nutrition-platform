@@ -61,6 +61,7 @@ def _plan_to_domain(row: NutritionPlanORM) -> NutritionPlan:
         rationale=row.rationale,
         created_at=row.created_at,
         sustainable_target_kcal=row.sustainable_target_kcal,
+        target_weight_kg=row.target_weight_kg,
     )
 
 
@@ -164,6 +165,7 @@ def save_plan(
         status=PlanStatus.ACTIVE.value,
         rationale=plan.rationale,
         sustainable_target_kcal=plan.sustainable_target_kcal,
+        target_weight_kg=plan.target_weight_kg,
     )
     session.add(row)
     session.flush()

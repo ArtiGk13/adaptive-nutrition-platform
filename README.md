@@ -94,6 +94,15 @@ and both referral criteria. Two corrections came out of the review and are imple
 - **Age range** — the system performed no age check at all. It is now explicitly limited to
   adults aged 18–65.
 
+### Target body weight
+
+Each plan records a `target_weight_kg` derived from a desirable BMI rather than asking the
+user to invent a number. The target is **staged**: while the user is overweight or obese
+(BMI ≥ 25) the higher initial value applies — 22.4 for women, 22.7 for men — and once BMI
+falls below that threshold a regenerated plan moves the target into the desirable range
+(21.3–22.1 for women, 21.9–22.4 for men, midpoint used). Both the staging rule and the
+values come from the dietitian review.
+
 **Known limitation:** the meal-level split (breakfast 25% / lunch 35% / dinner 30% / snack 10%)
 is the one assumption with no clinical backing — the reviewing dietitian did not recognise
 meal distribution as standard practice. It is a presentation default for spreading the daily
@@ -176,4 +185,3 @@ Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configure
 
 - Endpoints for the dietitian role (user overview, content management)
 - Blind expert review of generated suggestions, mixing adaptive and fixed outputs
-- Optional: derive a target weight from the ideal-BMI range, which the system currently lacks
