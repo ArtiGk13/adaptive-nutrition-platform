@@ -33,7 +33,7 @@ class AssessmentAgent:
                 adherence_score=0.0,
                 average_daily_kcal=0.0,
                 deviations=[],
-                detected_difficulties=["Δεν υπάρχει καταγραφή γευμάτων."],
+                detected_difficulties=["No meals logged."],
                 proposed_flag=AssessmentFlag.EXTRA_SUPPORT,
             )
 
@@ -45,8 +45,8 @@ class AssessmentAgent:
             relative_gap = abs(kcal - target) / target
             daily_scores.append(max(0.0, 1.0 - relative_gap))
             if relative_gap > DEVIATION_THRESHOLD:
-                direction = "υπέρβαση" if kcal > target else "υστέρηση"
-                deviations.append(f"{day.isoformat()}: {kcal} kcal ({direction} {relative_gap:.0%})")
+                direction = "over" if kcal > target else "under"
+                deviations.append(f"{day.isoformat()}: {kcal} kcal ({direction} by {relative_gap:.0%})")
 
         adherence_score = sum(daily_scores) / len(daily_scores)
         average_daily_kcal = sum(daily_kcal.values()) / len(daily_kcal)
@@ -84,11 +84,11 @@ class AssessmentAgent:
         difficulties: list[str] = []
         gap = (average_daily_kcal - target) / target
         if gap > DEVIATION_THRESHOLD:
-            difficulties.append("Συστηματική υπέρβαση του θερμιδικού στόχου.")
+            difficulties.append("Consistently exceeding the calorie target.")
         elif gap < -DEVIATION_THRESHOLD:
-            difficulties.append("Συστηματική υστέρηση από τον θερμιδικό στόχο.")
+            difficulties.append("Consistently falling short of the calorie target.")
         if len(deviations) >= 3:
-            difficulties.append("Χαμηλή συνέπεια στην τήρηση του πλάνου.")
+            difficulties.append("Low consistency in following the plan.")
         return difficulties
 
     def _flag(self, adherence_score: float, bias_ratio: float) -> AssessmentFlag:

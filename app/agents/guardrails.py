@@ -33,9 +33,9 @@ def check_min_calories(calorie_target: int, sex: Sex) -> GuardrailResult:
         return GuardrailResult(
             passed=False,
             code="min_calories",
-            message=f"Θερμιδικός στόχος {calorie_target} kcal κάτω από το ασφαλές όριο {minimum} kcal.",
+            message=f"Calorie target {calorie_target} kcal is below the safe floor of {minimum} kcal.",
         )
-    return GuardrailResult(True, "min_calories", "Θερμιδικός στόχος εντός ασφαλών ορίων.")
+    return GuardrailResult(True, "min_calories", "Calorie target is within safe limits.")
 
 
 def check_max_deficit_rate(calorie_target: int, profile: UserProfile) -> GuardrailResult:
@@ -47,11 +47,11 @@ def check_max_deficit_rate(calorie_target: int, profile: UserProfile) -> Guardra
             passed=False,
             code="max_deficit",
             message=(
-                f"Έλλειμμα {deficit_ratio:.0%} πάνω από το επιτρεπτό "
-                f"{settings.max_deficit_ratio:.0%} της ημερήσιας δαπάνης."
+                f"Deficit of {deficit_ratio:.0%} exceeds the permitted "
+                f"{settings.max_deficit_ratio:.0%} of daily energy expenditure."
             ),
         )
-    return GuardrailResult(True, "max_deficit", "Έλλειμμα εντός επιτρεπτών ορίων.")
+    return GuardrailResult(True, "max_deficit", "Deficit is within permitted limits.")
 
 
 def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> GuardrailResult:
@@ -59,7 +59,7 @@ def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> Guar
         return GuardrailResult(
             passed=False,
             code="underweight_weight_loss",
-            message=f"BMI {profile.bmi:.1f} κάτω από {MIN_HEALTHY_BMI} με στόχο απώλειας βάρους.",
+            message=f"BMI {profile.bmi:.1f} is below {MIN_HEALTHY_BMI} with a weight-loss goal.",
         )
 
     weight_logs = sorted(
@@ -75,10 +75,10 @@ def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> Guar
                 return GuardrailResult(
                     passed=False,
                     code="rapid_weight_loss",
-                    message=f"Ρυθμός απώλειας {weekly_change:.1f} kg/εβδομάδα πάνω από το ασφαλές όριο.",
+                    message=f"Loss rate of {weekly_change:.1f} kg/week exceeds the safe limit.",
                 )
 
-    return GuardrailResult(True, "suspicious_pattern", "Δεν εντοπίστηκε ύποπτο μοτίβο.")
+    return GuardrailResult(True, "suspicious_pattern", "No suspicious pattern detected.")
 
 
 def check_supported_age(profile: UserProfile) -> GuardrailResult:
@@ -93,11 +93,11 @@ def check_supported_age(profile: UserProfile) -> GuardrailResult:
             passed=False,
             code="age_out_of_range",
             message=(
-                f"Ηλικία {profile.age} ετών εκτός του υποστηριζόμενου εύρους {low}-{high}. "
-                "Απαιτείται αξιολόγηση από ειδικό."
+                f"Age {profile.age} is outside the supported range of {low}-{high}. "
+                "Assessment by a specialist is required."
             ),
         )
-    return GuardrailResult(True, "age_out_of_range", "Ηλικία εντός υποστηριζόμενου εύρους.")
+    return GuardrailResult(True, "age_out_of_range", "Age is within the supported range.")
 
 
 def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
@@ -108,7 +108,7 @@ def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
         "carbs": plan.macro_targets.carbs_g * 4 / plan.calorie_target,
     }
     breaches = [
-        f"{name} {shares[name]:.0%} εκτός {low:.0%}-{high:.0%}"
+        f"{name} at {shares[name]:.0%} outside {low:.0%}-{high:.0%}"
         for name, (low, high) in DRI_RANGES.items()
         if not (low - MACRO_ROUNDING_TOLERANCE <= shares[name] <= high + MACRO_ROUNDING_TOLERANCE)
     ]
@@ -116,9 +116,11 @@ def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
         return GuardrailResult(
             passed=False,
             code="macro_distribution",
-            message="Κατανομή μακροθρεπτικών εκτός συνιστώμενων ορίων: " + ", ".join(breaches),
+            message="Macronutrient distribution outside recommended ranges: " + ", ".join(breaches),
         )
-    return GuardrailResult(True, "macro_distribution", "Κατανομή μακροθρεπτικών εντός ορίων.")
+    return GuardrailResult(
+        True, "macro_distribution", "Macronutrient distribution is within recommended ranges."
+    )
 
 
 def run_plan_checks(plan: NutritionPlan, profile: UserProfile) -> list[GuardrailResult]:

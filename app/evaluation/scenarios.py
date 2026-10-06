@@ -5,11 +5,11 @@ from app.domain.user_profile import ActivityLevel, GoalType, Sex, UserProfile
 
 @dataclass
 class BehaviorProfile:
-    """Πώς συμπεριφέρεται ο συνθετικός χρήστης απέναντι στον θερμιδικό στόχο.
+    """How the synthetic user behaves towards the calorie target.
 
-    tolerance: η μέγιστη σχετική μεταβολή (έλλειμμα ή πλεόνασμα) ως προς την ημερήσια
-    δαπάνη που μπορεί να τηρήσει σταθερά. Πλάνα πιο απαιτητικά από αυτό το όριο
-    οδηγούν σε αντιστάθμιση και σε πιο ασταθή πρόσληψη.
+    tolerance: the largest relative change (deficit or surplus) against daily energy
+    expenditure that the user can hold steadily. Plans more demanding than this limit
+    lead to compensation and more erratic intake.
     """
 
     tolerance: float
@@ -30,7 +30,7 @@ class Scenario:
 SCENARIOS: list[Scenario] = [
     Scenario(
         name="weight_loss_consistent",
-        description="Απώλεια βάρους, συνεπής χρήστης με υψηλή ανοχή σε έλλειμμα",
+        description="Weight loss, consistent user with high tolerance for a deficit",
         profile=UserProfile(
             name="Synthetic WL-1",
             age=30,
@@ -46,7 +46,7 @@ SCENARIOS: list[Scenario] = [
     ),
     Scenario(
         name="weight_loss_low_tolerance",
-        description="Απώλεια βάρους, χρήστης που δεν αντέχει επιθετικό έλλειμμα",
+        description="Weight loss, user who cannot sustain an aggressive deficit",
         profile=UserProfile(
             name="Synthetic WL-2",
             age=42,
@@ -62,7 +62,7 @@ SCENARIOS: list[Scenario] = [
     ),
     Scenario(
         name="weight_loss_poor_logging",
-        description="Απώλεια βάρους με ελλιπή καταγραφή γευμάτων",
+        description="Weight loss with incomplete meal logging",
         profile=UserProfile(
             name="Synthetic WL-3",
             age=27,
@@ -78,7 +78,7 @@ SCENARIOS: list[Scenario] = [
     ),
     Scenario(
         name="maintenance_stable",
-        description="Διατήρηση βάρους με σταθερή συμπεριφορά",
+        description="Weight maintenance with stable behaviour",
         profile=UserProfile(
             name="Synthetic MT-1",
             age=35,
@@ -94,7 +94,7 @@ SCENARIOS: list[Scenario] = [
     ),
     Scenario(
         name="muscle_gain_steady",
-        description="Ενίσχυση μυϊκής μάζας με περιορισμένη ανοχή σε πλεόνασμα",
+        description="Muscle gain with limited tolerance for a surplus",
         profile=UserProfile(
             name="Synthetic MG-1",
             age=24,
@@ -110,7 +110,7 @@ SCENARIOS: list[Scenario] = [
     ),
     Scenario(
         name="weight_loss_safety_risk",
-        description="Απώλεια βάρους από ήδη χαμηλό βάρος — σενάριο ελέγχου ασφάλειας",
+        description="Weight loss from an already low weight — safety control scenario",
         profile=UserProfile(
             name="Synthetic RISK-1",
             age=22,

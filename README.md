@@ -1,9 +1,9 @@
 # Adaptive Multi-Agent Platform for Personalised Nutrition & Wellness Planning
 
-Υλοποίηση πτυχιακής εργασίας: adaptive multi-agent πλατφόρμα που σχεδιάζει, παρακολουθεί
-και προσαρμόζει εξατομικευμένο πλάνο διατροφής/wellness ανά χρήστη.
+Undergraduate thesis implementation: an adaptive multi-agent platform that plans, monitors
+and adjusts a personalised nutrition and wellness plan for each user.
 
-## Γρήγορη εκκίνηση
+## Quick start
 
 ```bash
 python -m venv .venv
@@ -12,7 +12,7 @@ python -m venv .venv
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Στη συνέχεια άνοιξε το http://127.0.0.1:8000/docs και κάλεσε `POST /users/1/cycle`.
+Then open http://127.0.0.1:8000/docs and call `POST /users/1/cycle`.
 
 Tests:
 
@@ -20,145 +20,144 @@ Tests:
 .venv\Scripts\python.exe -m pytest
 ```
 
-## Αρχιτεκτονική
+## Architecture
 
-Πέντε agents σε σειριακό pipeline (`app/agents/coordinator.py`), χωρίς framework
-ενορχήστρωσης — η κατάσταση περνάει ρητά ως ορίσματα και return values:
+Five agents in a sequential pipeline (`app/agents/coordinator.py`), with no orchestration
+framework — state is passed explicitly as arguments and return values:
 
-| Agent | Ρόλος | Αρχείο |
+| Agent | Role | File |
 |---|---|---|
-| Planner | Αρχικό πλάνο σε δομημένους στόχους (θερμίδες, macros, γεύματα) | `app/agents/planner.py` |
-| Assessment | Αξιολόγηση καταγεγραμμένων δεδομένων, εντοπισμός αποκλίσεων | `app/agents/assessment.py` |
-| Adaptation | Επιλογή επόμενης ενέργειας / αναπροσαρμογή πλάνου | `app/agents/adaptation.py` |
-| Tutor/Content | Εκπαιδευτικό περιεχόμενο και ανατροφοδότηση (ο μόνος που χρησιμοποιεί LLM) | `app/agents/tutor.py` |
-| Supervisor | Συντονισμός, ασφαλή όρια, έγκριση/παραπομπή | `app/agents/supervisor.py` |
+| Planner | Initial plan as structured goals (calories, macros, meals) | `app/agents/planner.py` |
+| Assessment | Evaluates logged data, detects deviations | `app/agents/assessment.py` |
+| Adaptation | Selects the next action or plan revision | `app/agents/adaptation.py` |
+| Tutor/Content | Educational content and feedback (the only LLM consumer) | `app/agents/tutor.py` |
+| Supervisor | Coordination, safe limits, approval and referral | `app/agents/supervisor.py` |
 
-Ροές:
+Flows:
 
-- `run_onboarding`: Planner → Supervisor → αποθήκευση πλάνου
-- `run_cycle`: Assessment → Adaptation → Supervisor → (αποθήκευση) → Tutor
+- `run_onboarding`: Planner → Supervisor → plan persisted
+- `run_cycle`: Assessment → Adaptation → Supervisor → (persist) → Tutor
 
-### Ασφαλή όρια (guardrails)
+### Guardrails
 
-Ο Supervisor είναι το **μοναδικό υποχρεωτικό σημείο ελέγχου**: το
-`repository.save_plan()` απαιτεί εγκεκριμένο `SupervisorDecision`, οπότε δεν υπάρχει
-διαδρομή στον κώδικα που αποθηκεύει πλάνο χωρίς έλεγχο. Οι κανόνες είναι καθαρές
-συναρτήσεις στο `app/agents/guardrails.py`:
+The Supervisor is the **single mandatory checkpoint**: `repository.save_plan()` requires an
+approving `SupervisorDecision`, so no code path can persist a plan without review. The rules
+are pure functions in `app/agents/guardrails.py`:
 
-- `check_supported_age` — το σύστημα απευθύνεται σε ενήλικες 18–65 ετών· εκτός εύρους οδηγεί
-  σε παραπομπή, καθώς άνω των 65 ισχύουν διαφορετικοί πίνακες αναφοράς (NEMO, 2019) και κάτω
-  των 18 η ανάπτυξη τους καθιστά ακατάλληλους
-- `check_min_calories` — ασφαλές κατώτατο θερμιδικό όριο ανά φύλο
-- `check_max_deficit_rate` — μέγιστο επιτρεπτό έλλειμμα ως ποσοστό της ημερήσιας δαπάνης
-- `check_macro_distribution` — κατανομή μακροθρεπτικών εντός των αποδεκτών ευρών (DRIs, 2010):
-  πρωτεΐνη 10–35%, λίπος 20–35%, υδατάνθρακες 45–65% της συνολικής ενέργειας
-- `check_suspicious_pattern` — χαμηλό BMI με στόχο απώλειας, ταχύς ρυθμός απώλειας βάρους
+- `check_supported_age` — the system targets adults aged 18–65; outside that range it refers
+  the user to a specialist, since different reference tables apply over 65 (NEMO, 2019) and
+  growth makes them inapplicable under 18
+- `check_min_calories` — safe calorie floor per sex
+- `check_max_deficit_rate` — maximum permitted deficit as a share of daily expenditure
+- `check_macro_distribution` — macros within the acceptable distribution ranges (DRIs, 2010):
+  protein 10–35%, fat 20–35%, carbohydrates 45–65% of total energy
+- `check_suspicious_pattern` — low BMI combined with a weight-loss goal, rapid weight loss
 
-Κάθε απόφαση καταγράφεται (logger `supervisor`) και αποθηκεύεται στον πίνακα
-`supervisor_decisions` για ιχνηλασιμότητα.
+Every decision is logged (`supervisor` logger) and stored in the `supervisor_decisions` table
+for traceability.
 
-### Ντετερμινιστική λογική vs LLM
+### Deterministic logic vs LLM
 
-Οι διατροφικοί υπολογισμοί (BMR κατά Mifflin-St Jeor, θερμιδικός στόχος, macros), οι
-κανόνες προσαρμογής και τα guardrails είναι **πλήρως ντετερμινιστικά σε κώδικα**
-(`app/domain/`, `app/agents/`). Το LLM (`app/llm/client.py`) χρησιμοποιείται μόνο για
-τη διατύπωση ανατροφοδότησης και εκπαιδευτικού περιεχομένου.
+Nutrition calculations (Mifflin-St Jeor BMR, calorie target, macros), the adaptation rules and
+the guardrails are **fully deterministic in code** (`app/domain/`, `app/agents/`). The LLM
+(`app/llm/client.py`) is used only to phrase feedback and educational content.
 
-Ο provider ορίζεται στο `.env` (`LLM_PROVIDER`). Προεπιλογή είναι `mock`, που επιστρέφει
-προκαθορισμένο κείμενο — έτσι όλο το σύστημα και τα tests τρέχουν χωρίς API key.
+The provider is set in `.env` (`LLM_PROVIDER`). The default is `mock`, which returns canned
+text, so the whole system and its tests run without any API key.
 
-### Κλινική επικύρωση
+### Clinical validation
 
-Οι κλινικές παραδοχές τέθηκαν υπόψη πτυχιούχου διατροφολόγου (φύλλο επικύρωσης στο `docs/`).
-Από την επισκόπηση προέκυψαν δύο διορθώσεις που ενσωματώθηκαν:
+The clinical assumptions were reviewed by a qualified dietitian (review form in `docs/`).
+Confirmed as correct: the Mifflin-St Jeor formula, the calorie floors, the maximum deficit,
+and both referral criteria. Two corrections came out of the review and are implemented:
 
-- **Κατανομή μακροθρεπτικών**: η πρωτεΐνη συνταγογραφείται ανά κιλό σωματικού βάρους, οπότε σε
-  μειωμένο θερμιδικό στόχο το ποσοστό της φούσκωνε και οι υδατάνθρακες έπεφταν κάτω από το
-  συνιστώμενο εύρος — σε **όλα** τα πλάνα απώλειας βάρους. Η κατανομή περιορίζεται πλέον στα
-  εύρη DRIs (2010).
-- **Ηλικιακό εύρος**: το σύστημα δεν έλεγχε καθόλου ηλικία. Πλέον περιορίζεται ρητά σε ενήλικες
-  18–65 ετών.
+- **Macronutrient distribution** — protein is prescribed per kilogram of body weight, so on a
+  reduced calorie target its share of energy inflated and carbohydrates fell below the
+  recommended range on **every** weight-loss plan. The distribution is now constrained to the
+  DRI (2010) ranges.
+- **Age range** — the system performed no age check at all. It is now explicitly limited to
+  adults aged 18–65.
 
-Εκκρεμεί η επιβεβαίωση των ορίων ασφαλείας (ελάχιστες θερμίδες, μέγιστο έλλειμμα, τύπος BMR,
-κατανομή γευμάτων, κριτήρια παραπομπής).
+**Known limitation:** the meal-level split (breakfast 25% / lunch 35% / dinner 30% / snack 10%)
+is the one assumption with no clinical backing — the reviewing dietitian did not recognise
+meal distribution as standard practice. It is a presentation default for spreading the daily
+target, not a clinical recommendation, and should be described as such.
 
-## Αξιολόγηση
+## Evaluation
 
 ```bash
-.venv\Scripts\python.exe scripts\run_evaluation.py        # 12 εβδομάδες (προεπιλογή)
+.venv\Scripts\python.exe scripts\run_evaluation.py        # 12 weeks (default)
 ```
 
-Συγκρίνονται τρεις στρατηγικές πάνω στα ίδια συνθετικά σενάρια
+Three strategies are compared on identical synthetic scenarios
 ([app/evaluation/scenarios.py](app/evaluation/scenarios.py)):
 
-- `adaptive` — πλήρης κύκλος: αξιολόγηση, προσαρμογή πλάνου, έλεγχος Supervisor, ανατροφοδότηση
-- `non_adaptive` — ανατροφοδότηση χωρίς ποτέ αλλαγή του πλάνου
-- `fixed` — σταθερό αρχικό πλάνο, χωρίς ανατροφοδότηση
+- `adaptive` — the full cycle: assessment, plan adaptation, Supervisor review, feedback
+- `non_adaptive` — feedback, but the plan never changes
+- `fixed` — a fixed initial plan with no feedback
 
-### Μοντέλο συνθετικού χρήστη
+### Synthetic user model
 
-Κάθε σενάριο ορίζει μια **ανοχή** (`tolerance`): τη μέγιστη σχετική μεταβολή ως προς την
-ημερήσια δαπάνη που ο χρήστης μπορεί να τηρήσει σταθερά. Όταν το πλάνο ζητάει περισσότερα,
-η πρόσληψη επιστρέφει μερικώς προς το όριο ανοχής και γίνεται πιο ασταθής. Το βάρος
-ενημερώνεται από το ενεργειακό ισοζύγιο (7700 kcal/kg) και η δαπάνη επανυπολογίζεται
-καθημερινά, οπότε το φαινόμενο πλατό προκύπτει από μόνο του.
+Each scenario defines a **tolerance**: the largest relative change against daily energy
+expenditure that the user can sustain. When the plan demands more, intake drifts back towards
+the tolerance boundary and becomes more erratic. Weight is updated from energy balance
+(7700 kcal/kg) and expenditure is recalculated daily, so the plateau effect emerges on its own.
 
-Οι ίδιοι σπόροι τυχαιότητας χρησιμοποιούνται και στις τρεις στρατηγικές ανά σενάριο, ώστε
-οι διαφορές να οφείλονται στο σύστημα και όχι στην τύχη.
+The same random seeds are used across all three strategies within a scenario, so differences
+are attributable to the system rather than to chance.
 
-**Παραδοχές που πρέπει να δηλωθούν στο κείμενο:** η επίδραση της ανατροφοδότησης
-μοντελοποιείται ως σταθερή μικρή βελτίωση αυτορρύθμισης (`FEEDBACK_EFFECT`) και εφαρμόζεται
-σε `adaptive` και `non_adaptive`· έτσι η διαφορά `adaptive` − `non_adaptive` απομονώνει
-την **προσαρμογή του πλάνου** και η διαφορά `non_adaptive` − `fixed` την ανατροφοδότηση.
+**Assumptions to state in the write-up:** the effect of feedback is modelled as a fixed small
+improvement in self-regulation (`FEEDBACK_EFFECT`) applied to both `adaptive` and
+`non_adaptive`. The `adaptive` − `non_adaptive` difference therefore isolates **plan
+adaptation**, and `non_adaptive` − `fixed` isolates feedback.
 
-### Μετρικές
+### Metrics
 
-`mean_adherence`, `consistency` (σταθερότητα τήρησης), `suitability` (ποσοστό ημερών που
-το πλάνο ήταν εφικτό για τον χρήστη), `goal_progress`, `unsafe_weeks` (ανεξάρτητος έλεγχος
-ασφάλειας για όλες τις στρατηγικές), `referrals`. Το `overall_effectiveness` είναι σταθμισμένο
-άθροισμα με ρητά βάρη στο [app/evaluation/metrics.py](app/evaluation/metrics.py).
+`mean_adherence`, `consistency`, `suitability` (share of days on which the plan was achievable
+for that user), `goal_progress`, `unsafe_weeks` (an independent safety check applied to every
+strategy) and `referrals`. `overall_effectiveness` is a weighted sum with explicit weights in
+[app/evaluation/metrics.py](app/evaluation/metrics.py).
 
-Η **χρηστικότητα** και η **καταλληλότητα των προτάσεων σε επίπεδο περιεχομένου** δεν
-μετρώνται εδώ — απαιτούν το expert review του διατροφολόγου.
+**Usability** and **content-level quality of the suggestions** are not measured here — they
+require the dietitian's expert review.
 
-### Ευρήματα (12 εβδομάδες, 6 σενάρια)
+### Results (12 weeks, 6 scenarios)
 
-| Στρατηγική | Τήρηση | Συνέπεια | Καταλληλότητα | Πρόοδος | Παραπομπές | Συνολικά |
+| Strategy | Adherence | Consistency | Suitability | Progress | Referrals | Overall |
 |---|---|---|---|---|---|---|
 | adaptive | 0.94 | 0.89 | **0.74** | 0.68 | 1 | **0.79** |
 | non_adaptive | 0.92 | 0.87 | 0.50 | 0.74 | 0 | 0.76 |
 | fixed | 0.92 | 0.87 | 0.50 | 0.73 | 0 | 0.75 |
 
-Το βασικό εύρημα είναι ένα **trade-off**: η προσαρμοστική προσέγγιση βελτιώνει σημαντικά την
-καταλληλότητα του πλάνου και την τήρηση, με κόστος κάποια επιβράδυνση της προόδου προς τον
-στόχο — επειδή συγκλίνει προς στόχους που ο χρήστης μπορεί πραγματικά να τηρήσει αντί να
-επιμένει σε ένα πλάνο που αγνοείται. Στα σενάρια όπου το αρχικό πλάνο ήταν ήδη κατάλληλο
-(`weight_loss_consistent`, `maintenance_stable`) οι τρεις στρατηγικές ταυτίζονται, όπως
-αναμένεται. Στο σενάριο ασφάλειας μόνο η `adaptive` εντόπισε την ανάγκη παραπομπής.
+The headline finding is a **trade-off**: the adaptive strategy substantially improves plan
+suitability and adherence at the cost of slower progress towards the goal, because it converges
+on targets the user can actually sustain instead of insisting on a plan that gets ignored. In
+the scenarios where the initial plan was already appropriate (`weight_loss_consistent`,
+`maintenance_stable`) the three strategies are identical, as expected. In the safety scenario,
+only `adaptive` detected the need for a referral.
 
-## Δομή
+## Layout
 
 ```
 app/
-├── domain/      καθαρά dataclasses + διατροφικοί υπολογισμοί (καμία εξάρτηση από DB/API)
-├── agents/      οι πέντε agents, τα guardrails και ο coordinator
-├── db/          SQLAlchemy models, session, repository (μοναδικό σημείο ORM <-> domain)
-├── llm/         wrapper LLM και prompt templates
-├── services/    ενδιάμεσο επίπεδο εφαρμογής που καλούν τα routes
-├── evaluation/  συνθετικά σενάρια, προσομοίωση και μετρικές σύγκρισης στρατηγικών
-└── api/         Pydantic schemas και FastAPI routes
-scripts/         seed synthetic χρήστη, εκτέλεση αξιολόγησης
+├── domain/      pure dataclasses and nutrition calculations (no DB or API dependency)
+├── agents/      the five agents, the guardrails and the coordinator
+├── db/          SQLAlchemy models, session, repository (the only ORM <-> domain boundary)
+├── llm/         LLM wrapper and prompt templates
+├── services/    application layer called by the routes
+├── evaluation/  synthetic scenarios, simulation and comparison metrics
+└── api/         Pydantic schemas and FastAPI routes
+scripts/         synthetic user seeding, evaluation runner
 tests/           unit / integration / system
 ```
 
-## Τεχνολογίες
+## Technologies
 
-Python 3.11+, FastAPI, SQLAlchemy + SQLite, pytest. Η βάση ορίζεται στο `.env`
-(`DATABASE_URL`) — η αλλαγή σε άλλη βάση (π.χ. MySQL/PostgreSQL) είναι αλλαγή
-connection string, χωρίς αλλαγές στον κώδικα.
+Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configured in `.env`
+(`DATABASE_URL`); moving to another engine is a connection-string change, not a code change.
 
-## Επόμενα βήματα
+## Next steps
 
-- Σύνδεση πραγματικού LLM provider στο `app/llm/client.py`
-- Endpoints για τον ρόλο του διατροφολόγου (επισκόπηση χρηστών, διαχείριση περιεχομένου)
-- Expert review του διατροφολόγου για τη χρηστικότητα και την ποιότητα των προτάσεων
+- Wire a local LLM provider in `app/llm/client.py`
+- Endpoints for the dietitian role (user overview, content management)
+- Expert review of usability and of the quality of generated suggestions

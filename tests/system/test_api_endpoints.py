@@ -31,7 +31,7 @@ def test_full_user_flow(client):
         json={
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "meal_slot": "lunch",
-            "food_description": "Σαλάτα με κοτόπουλο",
+            "food_description": "Chicken salad",
             "estimated_kcal": calorie_target,
         },
     )

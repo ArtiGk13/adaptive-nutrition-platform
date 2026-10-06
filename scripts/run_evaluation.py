@@ -15,7 +15,7 @@ def main() -> None:
     weeks = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_WEEKS
     results = asyncio.run(run_all(weeks=weeks))
 
-    print(f"\nΠροσομοίωση {weeks} εβδομάδων ανά σενάριο\n")
+    print(f"\nSimulation of {weeks} weeks per scenario\n")
     print(PER_RUN_HEADER)
     print("-" * len(PER_RUN_HEADER))
     for row in results:
@@ -26,13 +26,13 @@ def main() -> None:
             f"{row.overall_effectiveness:>7.2f}"
         )
 
-    print("\nΣύνοψη ανά στρατηγική")
+    print("\nSummary by strategy")
     print("-" * len(PER_RUN_HEADER))
     for strategy, values in summarise_by_strategy(results).items():
         print(f"{strategy:<14} {values}")
 
     path = write_csv(results)
-    print(f"\nΑποτελέσματα: {path}")
+    print(f"\nResults: {path}")
 
 
 if __name__ == "__main__":

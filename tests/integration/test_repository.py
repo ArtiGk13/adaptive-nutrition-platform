@@ -86,7 +86,7 @@ def test_log_entries_roundtrip_by_type(session, sample_profile):
             user_id=user.user_id,
             timestamp=now,
             meal_slot="lunch",
-            food_description="Σαλάτα με κοτόπουλο",
+            food_description="Chicken salad",
             estimated_kcal=550,
             estimated_macros={"protein_g": 40},
         ),

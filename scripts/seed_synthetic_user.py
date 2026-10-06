@@ -27,9 +27,9 @@ SYNTHETIC_PROFILE = UserProfile(
 )
 
 MEALS = [
-    ("breakfast", "Γιαούρτι με βρώμη και φρούτα", 420),
-    ("lunch", "Κοτόπουλο με ρύζι και σαλάτα", 640),
-    ("dinner", "Ομελέτα με λαχανικά", 480),
+    ("breakfast", "Yoghurt with oats and fruit", 420),
+    ("lunch", "Chicken with rice and salad", 640),
+    ("dinner", "Vegetable omelette", 480),
 ]
 
 

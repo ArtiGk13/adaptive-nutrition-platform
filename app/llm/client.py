@@ -1,8 +1,8 @@
 from app.config import settings
 
 MOCK_RESPONSE = (
-    "Συνεχίζεις σταθερά με το πλάνο σου. Κράτησε τον ρυθμό σου και κατέγραψε "
-    "τα γεύματά σου όπως έκανες και αυτή την εβδομάδα."
+    "You are keeping up with your plan consistently. Stay at this pace and keep "
+    "logging your meals the way you did this week."
 )
 
 

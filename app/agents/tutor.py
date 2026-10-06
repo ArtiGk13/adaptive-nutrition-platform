@@ -18,7 +18,7 @@ class TutorContentAgent:
             action_type=action.action_type.value,
             reason=action.reason,
             adherence_score=assessment.adherence_score,
-            deviations="; ".join(assessment.deviations) or "καμία",
+            deviations="; ".join(assessment.deviations) or "none",
         )
         return await self.llm.generate(prompt)
 

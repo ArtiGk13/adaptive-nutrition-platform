@@ -22,13 +22,13 @@ class AdaptationAgent:
         if assessment.proposed_flag == AssessmentFlag.REFER_SPECIALIST:
             return AdaptationAction(
                 action_type=ActionType.REFER_SPECIALIST,
-                reason="Η αξιολόγηση υποδεικνύει ανάγκη παραπομπής σε ειδικό.",
+                reason="Assessment indicates a specialist referral is needed.",
             )
 
         if assessment.proposed_flag == AssessmentFlag.EXTRA_SUPPORT:
             return AdaptationAction(
                 action_type=ActionType.EXTRA_SUPPORT,
-                reason="Χαμηλή τήρηση ή ελλιπής καταγραφή — απαιτείται επιπλέον υποστήριξη.",
+                reason="Low adherence or incomplete logging — extra support is needed.",
             )
 
         sustainable = self._update_sustainable_target(profile, plan, assessment)
@@ -38,14 +38,14 @@ class AdaptationAgent:
         if abs(delta) / plan.calorie_target < NEGLIGIBLE_CHANGE_RATIO:
             return AdaptationAction(
                 action_type=ActionType.CONTINUE,
-                reason="Ο τρέχων θερμιδικός στόχος παραμένει κατάλληλος — διατήρηση του πλάνου.",
+                reason="The current calorie target remains appropriate — keeping the plan.",
             )
 
         new_target = self._bounded_target(plan.calorie_target, delta)
         return AdaptationAction(
             action_type=ActionType.ADJUST_PLAN,
             reason=(
-                f"Προσαρμογή θερμιδικού στόχου από {plan.calorie_target} σε {new_target} kcal "
+                f"Adjusting calorie target from {plan.calorie_target} to {new_target} kcal "
                 f"({rationale})."
             ),
             new_plan=self._rebuild_plan(profile, plan, new_target, sustainable),
@@ -85,7 +85,7 @@ class AdaptationAgent:
         """
         goal_target = float(calculate_calorie_target(profile))
         if sustainable_target is None:
-            return goal_target, "επαναϋπολογισμός βάσει τρέχοντος βάρους"
+            return goal_target, "recalculated from current body weight"
 
         if profile.goal_type == GoalType.WEIGHT_LOSS:
             desired = max(goal_target, float(sustainable_target))
@@ -93,8 +93,8 @@ class AdaptationAgent:
             desired = min(goal_target, float(sustainable_target))
 
         if desired != goal_target:
-            return desired, f"προσαρμογή στο βιώσιμο επίπεδο {sustainable_target} kcal"
-        return desired, "επαναϋπολογισμός βάσει τρέχοντος βάρους"
+            return desired, f"adjusted to the sustainable level of {sustainable_target} kcal"
+        return desired, "recalculated from current body weight"
 
     def _bounded_target(self, current_target: int, delta: float) -> int:
         max_step = current_target * MAX_ADJUSTMENT_RATIO
@@ -112,6 +112,6 @@ class AdaptationAgent:
             calorie_target=new_target,
             macro_targets=calculate_macro_targets(new_target, profile),
             meal_structure=build_meal_structure(new_target),
-            rationale=f"Αναπροσαρμογή πλάνου έκδοσης {plan.version} βάσει καταγεγραμμένης πρόσληψης.",
+            rationale=f"Revision of plan version {plan.version} based on logged intake.",
             sustainable_target_kcal=sustainable_target,
         )

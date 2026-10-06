@@ -35,6 +35,9 @@ DRI_RANGES: dict[str, tuple[float, float]] = {
 
 SUPPORTED_AGE_RANGE = (18, 65)
 
+# Presentation default for spreading the daily target across meals. Unlike every other
+# constant here this one carries NO clinical backing: the reviewing dietitian did not
+# recognise meal-level distribution as standard practice. Treat it as a display choice.
 MEAL_SLOT_RATIOS: dict[str, float] = {
     "breakfast": 0.25,
     "lunch": 0.35,

@@ -18,8 +18,8 @@ class PlannerAgent:
             macro_targets=calculate_macro_targets(calorie_target, profile),
             meal_structure=build_meal_structure(calorie_target),
             rationale=(
-                f"Αρχικό πλάνο βάσει Mifflin-St Jeor για στόχο "
-                f"'{profile.goal_type.value}' και επίπεδο δραστηριότητας "
+                f"Initial plan from Mifflin-St Jeor for goal "
+                f"'{profile.goal_type.value}' and activity level "
                 f"'{profile.activity_level.value}'."
             ),
         )

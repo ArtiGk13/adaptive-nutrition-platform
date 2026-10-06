@@ -190,7 +190,7 @@ async def simulate(
                 )
                 informational = AdaptationAction(
                     action_type=ActionType.CONTINUE,
-                    reason="Ενημερωτική ανατροφοδότηση χωρίς αλλαγή πλάνου.",
+                    reason="Informational feedback without any plan change.",
                 )
                 await tutor.generate_feedback(informational, assessment)
 

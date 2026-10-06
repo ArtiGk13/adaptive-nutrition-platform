@@ -24,7 +24,7 @@ class SupervisorAgent:
             profile=profile,
             results=results,
             approved_type=DecisionType.APPROVE_PLAN,
-            approved_notes="Αρχικό πλάνο εντός ασφαλών ορίων.",
+            approved_notes="Initial plan is within safe limits.",
             plan_version=plan.version,
         )
 
@@ -40,7 +40,7 @@ class SupervisorAgent:
                 profile=profile,
                 decision_type=DecisionType.FLAG_REFERRAL,
                 checks_passed=not failed(results),
-                notes="Η ενέργεια του συστήματος οδηγεί σε παραπομπή σε ειδικό.",
+                notes="The system action leads to a specialist referral.",
                 failed_checks=[result.code for result in failed(results)],
             )
 
@@ -48,7 +48,7 @@ class SupervisorAgent:
             profile=profile,
             results=results,
             approved_type=DecisionType.APPROVE_ADJUSTMENT,
-            approved_notes=f"Εγκρίθηκε ενέργεια '{action.action_type.value}'.",
+            approved_notes=f"Approved action '{action.action_type.value}'.",
             plan_version=action.new_plan.version if action.new_plan else None,
         )
 
