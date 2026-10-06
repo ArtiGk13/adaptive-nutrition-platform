@@ -14,6 +14,7 @@ from app.agents.guardrails import check_suspicious_pattern, failed, run_plan_che
 from app.agents.tutor import TutorContentAgent
 from app.db import repository
 from app.db.models import Base
+from app.domain.assessment import AssessmentResult
 from app.domain.decisions import ActionType, AdaptationAction, DecisionType
 from app.domain.log_entry import MealLogEntry, WeightLogEntry
 from app.domain.nutrition_plan import NutritionPlan, calculate_bmr, calculate_tdee
@@ -55,6 +56,11 @@ class SimulationRun:
     plan_versions: int = 1
     start_weight_kg: float = 0.0
     final_weight_kg: float = 0.0
+    # End state of the run, used to build expert-review cases. Left unset for `fixed`,
+    # which by design never assesses the user.
+    final_plan: NutritionPlan | None = None
+    final_assessment: AssessmentResult | None = None
+    final_action: AdaptationAction | None = None
 
 
 def _daily_intake(
@@ -184,6 +190,8 @@ async def simulate(
                 plan = result.plan
                 if result.decision.decision_type == DecisionType.FLAG_REFERRAL:
                     run.referrals += 1
+                run.final_assessment = result.assessment
+                run.final_action = result.action
             elif strategy == Strategy.NON_ADAPTIVE:
                 assessment = await assessor.evaluate(
                     user, plan, repository.get_logs(session, user.user_id)
@@ -193,9 +201,12 @@ async def simulate(
                     reason="Informational feedback without any plan change.",
                 )
                 await tutor.generate_feedback(informational, assessment)
+                run.final_assessment = assessment
+                run.final_action = informational
 
         run.final_weight_kg = weight
         run.plan_versions = plan.version
+        run.final_plan = plan
         return run
     finally:
         session.close()

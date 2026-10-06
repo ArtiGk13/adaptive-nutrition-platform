@@ -1,0 +1,13 @@
+case_number,scenario,strategy
+1,weight_loss_poor_logging,non_adaptive
+2,weight_loss_low_tolerance,adaptive
+3,weight_loss_safety_risk,non_adaptive
+4,weight_loss_consistent,adaptive
+5,weight_loss_safety_risk,adaptive
+6,muscle_gain_steady,adaptive
+7,maintenance_stable,adaptive
+8,weight_loss_low_tolerance,non_adaptive
+9,muscle_gain_steady,non_adaptive
+10,weight_loss_poor_logging,adaptive
+11,weight_loss_consistent,non_adaptive
+12,maintenance_stable,non_adaptive

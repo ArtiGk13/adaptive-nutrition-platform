@@ -1,0 +1,568 @@
+[
+  {
+    "profile": {
+      "age": 27,
+      "sex": "female",
+      "height_cm": 162.0,
+      "start_weight_kg": 74.0,
+      "current_weight_kg": 69.7,
+      "activity_level": "moderate",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1806,
+      "target_weight_kg": 58.8,
+      "macro_targets": {
+        "protein_g": 122,
+        "carbs_g": 203,
+        "fat_g": 56
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 452
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 632
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 542
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 181
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1834,
+      "adherence_score": 0.87,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your nutrition plan overall! It looks like there was a bit of a fluctuation in your calorie intake this week. Keep an eye on those days where you went over, and maybe look for small adjustments you can make to balance things out.",
+    "case_number": 1
+  },
+  {
+    "profile": {
+      "age": 42,
+      "sex": "male",
+      "height_cm": 178.0,
+      "start_weight_kg": 95.0,
+      "current_weight_kg": 92.8,
+      "activity_level": "sedentary",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 2024,
+      "target_weight_kg": 71.9,
+      "macro_targets": {
+        "protein_g": 137,
+        "carbs_g": 228,
+        "fat_g": 63
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 506
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 708
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 607
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 202
+        }
+      ],
+      "version": 3
+    },
+    "observed": {
+      "average_daily_kcal": 2047,
+      "adherence_score": 0.95,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan! Keep it up, and you're on the right track to reaching your goals.",
+    "case_number": 2
+  },
+  {
+    "profile": {
+      "age": 22,
+      "sex": "female",
+      "height_cm": 170.0,
+      "start_weight_kg": 57.0,
+      "current_weight_kg": 53.3,
+      "activity_level": "light",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1498,
+      "target_weight_kg": 62.7,
+      "macro_targets": {
+        "protein_g": 101,
+        "carbs_g": 169,
+        "fat_g": 47
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 374
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 524
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 449
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 150
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1488,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your nutrition plan! Keep up the good work and enjoy your healthy progress.",
+    "case_number": 3
+  },
+  {
+    "profile": {
+      "age": 30,
+      "sex": "female",
+      "height_cm": 168.0,
+      "start_weight_kg": 82.0,
+      "current_weight_kg": 77.8,
+      "activity_level": "light",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1715,
+      "target_weight_kg": 63.2,
+      "macro_targets": {
+        "protein_g": 116,
+        "carbs_g": 193,
+        "fat_g": 53
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 429
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 600
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 514
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 172
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1702,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan! Keep up the good work, and remember, consistency is key.",
+    "case_number": 4
+  },
+  {
+    "profile": {
+      "age": 22,
+      "sex": "female",
+      "height_cm": 170.0,
+      "start_weight_kg": 57.0,
+      "current_weight_kg": 53.3,
+      "activity_level": "light",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1498,
+      "target_weight_kg": 62.7,
+      "macro_targets": {
+        "protein_g": 101,
+        "carbs_g": 169,
+        "fat_g": 47
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 374
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 524
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 449
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 150
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1488,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan! Keep it up, and you're on the right track to reaching your goals.",
+    "case_number": 5
+  },
+  {
+    "profile": {
+      "age": 24,
+      "sex": "male",
+      "height_cm": 175.0,
+      "start_weight_kg": 70.0,
+      "current_weight_kg": 73.2,
+      "activity_level": "active",
+      "goal_type": "muscle_gain",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 3185,
+      "target_weight_kg": 67.8,
+      "macro_targets": {
+        "protein_g": 140,
+        "carbs_g": 433,
+        "fat_g": 99
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 796
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 1115
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 956
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 318
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 3111,
+      "adherence_score": 0.91,
+      "difficulties": []
+    },
+    "feedback_text": "You're doing great with staying so close to your plan! Just a small adjustment on September 30th, and that's okay. Keep it up, and you're well on your way to meeting your goals!",
+    "case_number": 6
+  },
+  {
+    "profile": {
+      "age": 35,
+      "sex": "male",
+      "height_cm": 180.0,
+      "start_weight_kg": 78.0,
+      "current_weight_kg": 78.1,
+      "activity_level": "moderate",
+      "goal_type": "maintenance",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 2689,
+      "target_weight_kg": 71.8,
+      "macro_targets": {
+        "protein_g": 109,
+        "carbs_g": 375,
+        "fat_g": 84
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 672
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 941
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 807
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 269
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 2706,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan! Keep it up, and you're on the right track to meeting your goals.",
+    "case_number": 7
+  },
+  {
+    "profile": {
+      "age": 42,
+      "sex": "male",
+      "height_cm": 178.0,
+      "start_weight_kg": 95.0,
+      "current_weight_kg": 92.1,
+      "activity_level": "sedentary",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1783,
+      "target_weight_kg": 71.9,
+      "macro_targets": {
+        "protein_g": 120,
+        "carbs_g": 201,
+        "fat_g": 55
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 446
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 624
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 535
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 178
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1960,
+      "adherence_score": 0.86,
+      "difficulties": [
+        "Low consistency in following the plan."
+      ]
+    },
+    "feedback_text": "It looks like you've had a few days where your calorie intake was a bit higher than planned. Don\u2019t worry too much\u2014these fluctuations happen. Try to stay focused on your overall goals and listen to your body. Keep going, and you\u2019re doing great!",
+    "case_number": 8
+  },
+  {
+    "profile": {
+      "age": 24,
+      "sex": "male",
+      "height_cm": 175.0,
+      "start_weight_kg": 70.0,
+      "current_weight_kg": 73.2,
+      "activity_level": "active",
+      "goal_type": "muscle_gain",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 3185,
+      "target_weight_kg": 67.8,
+      "macro_targets": {
+        "protein_g": 140,
+        "carbs_g": 433,
+        "fat_g": 99
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 796
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 1115
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 956
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 318
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 3111,
+      "adherence_score": 0.91,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan overall! It looks like you had a bit of a splurge on September 30th. Remember, it's okay to enjoy treats in moderation. Keep focusing on your goals, and you're doing fantastic!",
+    "case_number": 9
+  },
+  {
+    "profile": {
+      "age": 27,
+      "sex": "female",
+      "height_cm": 162.0,
+      "start_weight_kg": 74.0,
+      "current_weight_kg": 71.2,
+      "activity_level": "moderate",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 2054,
+      "target_weight_kg": 58.8,
+      "macro_targets": {
+        "protein_g": 131,
+        "carbs_g": 239,
+        "fat_g": 64
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 514
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 719
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 616
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 205
+        }
+      ],
+      "version": 3
+    },
+    "observed": {
+      "average_daily_kcal": 2047,
+      "adherence_score": 0.94,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your plan! Keep up the good work, and remember, consistency is key.",
+    "case_number": 10
+  },
+  {
+    "profile": {
+      "age": 30,
+      "sex": "female",
+      "height_cm": 168.0,
+      "start_weight_kg": 82.0,
+      "current_weight_kg": 77.8,
+      "activity_level": "light",
+      "goal_type": "weight_loss",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 1715,
+      "target_weight_kg": 63.2,
+      "macro_targets": {
+        "protein_g": 116,
+        "carbs_g": 193,
+        "fat_g": 53
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 429
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 600
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 514
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 172
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 1702,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your nutrition plan! Keep up the good work and enjoy your healthy progress!",
+    "case_number": 11
+  },
+  {
+    "profile": {
+      "age": 35,
+      "sex": "male",
+      "height_cm": 180.0,
+      "start_weight_kg": 78.0,
+      "current_weight_kg": 78.1,
+      "activity_level": "moderate",
+      "goal_type": "maintenance",
+      "weeks_elapsed": 12
+    },
+    "plan": {
+      "calorie_target": 2689,
+      "target_weight_kg": 71.8,
+      "macro_targets": {
+        "protein_g": 109,
+        "carbs_g": 375,
+        "fat_g": 84
+      },
+      "meal_structure": [
+        {
+          "slot_name": "breakfast",
+          "target_kcal": 672
+        },
+        {
+          "slot_name": "lunch",
+          "target_kcal": 941
+        },
+        {
+          "slot_name": "dinner",
+          "target_kcal": 807
+        },
+        {
+          "slot_name": "snack",
+          "target_kcal": 269
+        }
+      ],
+      "version": 1
+    },
+    "observed": {
+      "average_daily_kcal": 2706,
+      "adherence_score": 0.97,
+      "difficulties": []
+    },
+    "feedback_text": "Great job sticking to your nutrition plan! Keep up the good work and enjoy your healthy habits.",
+    "case_number": 12
+  }
+]
