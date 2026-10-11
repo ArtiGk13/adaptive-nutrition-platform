@@ -1,6 +1,6 @@
 # Adaptive Multi-Agent Platform for Personalised Nutrition & Wellness Planning
 
-Undergraduate thesis implementation: an adaptive multi-agent platform that plans, monitors
+MSc dissertation implementation: an adaptive multi-agent platform that plans, monitors
 and adjusts a personalised nutrition and wellness plan for each user.
 
 ## Quick start
