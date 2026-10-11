@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.routes import cycle, logs, plans, users
+from app.api.routes import cycle, logs, nutritionist, plans, users
 from app.db.database import create_tables
 from app.logging_config import setup_logging
 
@@ -16,6 +16,7 @@ app.include_router(users.router)
 app.include_router(plans.router)
 app.include_router(logs.router)
 app.include_router(cycle.router)
+app.include_router(nutritionist.router)
 
 
 @app.get("/health", tags=["health"])

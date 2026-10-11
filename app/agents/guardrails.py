@@ -54,14 +54,17 @@ def check_max_deficit_rate(calorie_target: int, profile: UserProfile) -> Guardra
     return GuardrailResult(True, "max_deficit", "Deficit is within permitted limits.")
 
 
-def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> GuardrailResult:
+def check_underweight_goal(profile: UserProfile) -> GuardrailResult:
     if profile.bmi < MIN_HEALTHY_BMI and profile.goal_type == GoalType.WEIGHT_LOSS:
         return GuardrailResult(
             passed=False,
             code="underweight_weight_loss",
             message=f"BMI {profile.bmi:.1f} is below {MIN_HEALTHY_BMI} with a weight-loss goal.",
         )
+    return GuardrailResult(True, "underweight_weight_loss", "BMI is compatible with the goal.")
 
+
+def check_rapid_weight_loss(profile: UserProfile, logs: list[LogEntry]) -> GuardrailResult:
     weight_logs = sorted(
         (entry for entry in logs if isinstance(entry, WeightLogEntry)),
         key=lambda entry: entry.timestamp,
@@ -78,7 +81,7 @@ def check_suspicious_pattern(profile: UserProfile, logs: list[LogEntry]) -> Guar
                     message=f"Loss rate of {weekly_change:.1f} kg/week exceeds the safe limit.",
                 )
 
-    return GuardrailResult(True, "suspicious_pattern", "No suspicious pattern detected.")
+    return GuardrailResult(True, "rapid_weight_loss", "Weight change rate is within safe limits.")
 
 
 def check_supported_age(profile: UserProfile) -> GuardrailResult:
@@ -123,9 +126,18 @@ def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
     )
 
 
-def run_plan_checks(plan: NutritionPlan, profile: UserProfile) -> list[GuardrailResult]:
+def run_profile_checks(profile: UserProfile, logs: list[LogEntry]) -> list[GuardrailResult]:
+    """Checks about the person, which apply whether or not a new plan is being proposed."""
     return [
         check_supported_age(profile),
+        check_underweight_goal(profile),
+        check_rapid_weight_loss(profile, logs),
+    ]
+
+
+def run_plan_checks(plan: NutritionPlan, profile: UserProfile) -> list[GuardrailResult]:
+    """Checks about the numbers inside a proposed plan."""
+    return [
         check_min_calories(plan.calorie_target, profile.sex),
         check_max_deficit_rate(plan.calorie_target, profile),
         check_macro_distribution(plan),

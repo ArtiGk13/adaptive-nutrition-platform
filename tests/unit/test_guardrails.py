@@ -6,8 +6,10 @@ from app.agents.guardrails import (
     check_macro_distribution,
     check_max_deficit_rate,
     check_min_calories,
+    check_rapid_weight_loss,
     check_supported_age,
-    check_suspicious_pattern,
+    check_underweight_goal,
+    run_profile_checks,
 )
 from app.domain.log_entry import WeightLogEntry
 from app.domain.nutrition_plan import (
@@ -39,21 +41,34 @@ def test_max_deficit_accepts_planned_target(sample_profile):
     assert check_max_deficit_rate(target, sample_profile).passed
 
 
-def test_suspicious_pattern_flags_underweight_weight_loss(sample_profile):
+def test_underweight_user_with_weight_loss_goal_is_flagged(sample_profile):
     sample_profile.weight_kg = 45.0
     sample_profile.goal_type = GoalType.WEIGHT_LOSS
-    result = check_suspicious_pattern(sample_profile, [])
+    result = check_underweight_goal(sample_profile)
     assert not result.passed
     assert result.code == "underweight_weight_loss"
 
 
-def test_suspicious_pattern_flags_rapid_weight_loss(sample_profile):
+def test_underweight_user_with_other_goal_is_allowed(sample_profile):
+    sample_profile.weight_kg = 45.0
+    sample_profile.goal_type = GoalType.MUSCLE_GAIN
+    assert check_underweight_goal(sample_profile).passed
+
+
+def test_underweight_check_runs_without_any_logs(sample_profile):
+    """It must fire at onboarding, before the user has logged anything."""
+    sample_profile.weight_kg = 45.0
+    codes = {result.code for result in run_profile_checks(sample_profile, []) if not result.passed}
+    assert "underweight_weight_loss" in codes
+
+
+def test_rapid_weight_loss_is_flagged(sample_profile):
     now = datetime.now(timezone.utc)
     logs = [
         WeightLogEntry(user_id=1, timestamp=now - timedelta(days=7), weight_kg=72.0),
         WeightLogEntry(user_id=1, timestamp=now, weight_kg=69.0),
     ]
-    result = check_suspicious_pattern(sample_profile, logs)
+    result = check_rapid_weight_loss(sample_profile, logs)
     assert not result.passed
     assert result.code == "rapid_weight_loss"
 
@@ -97,10 +112,10 @@ def test_macro_distribution_rejects_carbohydrate_shortfall():
     assert result.code == "macro_distribution"
 
 
-def test_suspicious_pattern_accepts_healthy_progress(sample_profile):
+def test_healthy_progress_is_accepted(sample_profile):
     now = datetime.now(timezone.utc)
     logs = [
         WeightLogEntry(user_id=1, timestamp=now - timedelta(days=7), weight_kg=72.0),
         WeightLogEntry(user_id=1, timestamp=now, weight_kg=71.5),
     ]
-    assert check_suspicious_pattern(sample_profile, logs).passed
+    assert check_rapid_weight_loss(sample_profile, logs).passed

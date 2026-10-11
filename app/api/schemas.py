@@ -8,6 +8,7 @@ from app.domain.decisions import ActionType, AdaptationAction, DecisionType, Sup
 from app.domain.log_entry import ActivityLogEntry, LogEntry, MealLogEntry, WeightLogEntry
 from app.domain.nutrition_plan import NutritionPlan
 from app.domain.user_profile import ActivityLevel, GoalType, Role, Sex, UserProfile
+from app.services.nutritionist_service import UserHistory, UserOverview
 
 
 class UserCreate(BaseModel):
@@ -215,6 +216,59 @@ class DecisionRead(BaseModel):
             guardrail_checks_passed=decision.guardrail_checks_passed,
             failed_checks=decision.failed_checks,
             notes=decision.notes,
+        )
+
+
+class UserOverviewRead(BaseModel):
+    user_id: int
+    name: str
+    age: int
+    sex: Sex
+    goal_type: GoalType
+    weight_kg: float
+    adherence_level: float
+    calorie_target: int | None
+    target_weight_kg: float | None
+    latest_flag: AssessmentFlag | None
+    needs_referral: bool
+
+    @classmethod
+    def from_domain(cls, overview: UserOverview) -> "UserOverviewRead":
+        profile = overview.profile
+        return cls(
+            user_id=profile.user_id,
+            name=profile.name,
+            age=profile.age,
+            sex=profile.sex,
+            goal_type=profile.goal_type,
+            weight_kg=profile.weight_kg,
+            adherence_level=profile.adherence_level,
+            calorie_target=overview.active_plan.calorie_target if overview.active_plan else None,
+            target_weight_kg=(
+                overview.active_plan.target_weight_kg if overview.active_plan else None
+            ),
+            latest_flag=(
+                overview.latest_assessment.proposed_flag if overview.latest_assessment else None
+            ),
+            needs_referral=overview.needs_referral,
+        )
+
+
+class UserHistoryRead(BaseModel):
+    profile: UserRead
+    plans: list[PlanRead]
+    assessments: list[AssessmentRead]
+    decisions: list[DecisionRead]
+
+    @classmethod
+    def from_domain(cls, history: UserHistory) -> "UserHistoryRead":
+        return cls(
+            profile=UserRead.from_domain(history.profile),
+            plans=[PlanRead.from_domain(plan) for plan in history.plans],
+            assessments=[
+                AssessmentRead.from_domain(assessment) for assessment in history.assessments
+            ],
+            decisions=[DecisionRead.from_domain(decision) for decision in history.decisions],
         )
 
 

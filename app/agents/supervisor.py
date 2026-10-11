@@ -2,9 +2,9 @@ from datetime import datetime, timezone
 
 from app.agents.guardrails import (
     GuardrailResult,
-    check_suspicious_pattern,
     failed,
     run_plan_checks,
+    run_profile_checks,
 )
 from app.domain.decisions import ActionType, AdaptationAction, DecisionType, SupervisorDecision
 from app.domain.log_entry import LogEntry
@@ -17,9 +17,12 @@ class SupervisorAgent:
     """Mandatory gate: nothing is persisted or returned without a decision from here."""
 
     async def validate_plan(
-        self, plan: NutritionPlan, profile: UserProfile
+        self,
+        plan: NutritionPlan,
+        profile: UserProfile,
+        logs: list[LogEntry] | None = None,
     ) -> SupervisorDecision:
-        results = run_plan_checks(plan, profile)
+        results = run_profile_checks(profile, logs or []) + run_plan_checks(plan, profile)
         return self._decide(
             profile=profile,
             results=results,
@@ -31,7 +34,7 @@ class SupervisorAgent:
     async def review(
         self, action: AdaptationAction, profile: UserProfile, logs: list[LogEntry]
     ) -> SupervisorDecision:
-        results = [check_suspicious_pattern(profile, logs)]
+        results = run_profile_checks(profile, logs)
         if action.new_plan is not None:
             results.extend(run_plan_checks(action.new_plan, profile))
 

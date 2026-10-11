@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.agents.assessment import AssessmentAgent
 from app.agents.coordinator import Coordinator
-from app.agents.guardrails import check_suspicious_pattern, failed, run_plan_checks
+from app.agents.guardrails import failed, run_plan_checks, run_profile_checks
 from app.agents.tutor import TutorContentAgent
 from app.db import repository
 from app.db.models import Base
@@ -104,7 +104,7 @@ def _passive_safety_check(profile: UserProfile, plan: NutritionPlan, logs) -> bo
     Runs for every strategy, independently of whether that strategy consults the
     Supervisor, so unsafe weeks are comparable across arms.
     """
-    results = run_plan_checks(plan, profile) + [check_suspicious_pattern(profile, logs)]
+    results = run_plan_checks(plan, profile) + run_profile_checks(profile, logs)
     return bool(failed(results))
 
 

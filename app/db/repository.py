@@ -197,6 +197,15 @@ def get_active_plan(session: Session, user_id: int) -> NutritionPlan | None:
     return _plan_to_domain(row) if row else None
 
 
+def get_plans(session: Session, user_id: int) -> list[NutritionPlan]:
+    rows = session.scalars(
+        select(NutritionPlanORM)
+        .where(NutritionPlanORM.user_id == user_id)
+        .order_by(NutritionPlanORM.version)
+    ).all()
+    return [_plan_to_domain(row) for row in rows]
+
+
 def add_log_entry(session: Session, entry: LogEntry) -> LogEntry:
     row = LogEntryORM(user_id=entry.user_id, timestamp=entry.timestamp, type=entry.type.value)
     if isinstance(entry, MealLogEntry):

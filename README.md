@@ -33,6 +33,12 @@ framework — state is passed explicitly as arguments and return values:
 | Tutor/Content | Educational content and feedback (the only LLM consumer) | `app/agents/tutor.py` |
 | Supervisor | Coordination, safe limits, approval and referral | `app/agents/supervisor.py` |
 
+A second role is supported: an authorised user (the collaborating dietitian) can review every
+user's progress and the full Supervisor decision trail through `/nutritionist/*`. The caller is
+identified by an `X-User-Id` header and must hold the nutritionist role. This demonstrates role
+separation only — there are no credentials, sessions or tokens, and real authentication is
+explicitly out of scope for the thesis.
+
 Flows:
 
 - `run_onboarding`: Planner → Supervisor → plan persisted
@@ -44,14 +50,21 @@ The Supervisor is the **single mandatory checkpoint**: `repository.save_plan()` 
 approving `SupervisorDecision`, so no code path can persist a plan without review. The rules
 are pure functions in `app/agents/guardrails.py`:
 
+Checks about the **person** (`run_profile_checks`) run both when a plan is first created and
+on every cycle, whether or not a new plan is proposed:
+
 - `check_supported_age` — the system targets adults aged 18–65; outside that range it refers
   the user to a specialist, since different reference tables apply over 65 (NEMO, 2019) and
   growth makes them inapplicable under 18
+- `check_underweight_goal` — BMI below 18.5 combined with a weight-loss goal
+- `check_rapid_weight_loss` — logged weight falling faster than 1 kg/week
+
+Checks about the **numbers in a proposed plan** (`run_plan_checks`):
+
 - `check_min_calories` — safe calorie floor per sex
 - `check_max_deficit_rate` — maximum permitted deficit as a share of daily expenditure
 - `check_macro_distribution` — macros within the acceptable distribution ranges (DRIs, 2010):
   protein 10–35%, fat 20–35%, carbohydrates 45–65% of total energy
-- `check_suspicious_pattern` — low BMI combined with a weight-loss goal, rapid weight loss
 
 Every decision is logged (`supervisor` logger) and stored in the `supervisor_decisions` table
 for traceability.
@@ -183,5 +196,6 @@ Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configure
 
 ## Next steps
 
-- Endpoints for the dietitian role (user overview, content management)
-- Blind expert review of generated suggestions, mixing adaptive and fixed outputs
+- Blind expert review of generated suggestions (sample built by `scripts/build_review_sample.py`)
+- Clinical sign-off on the adaptation policy itself, which the review has not yet covered
+- Content management for the dietitian role, once the shape of that content is decided
