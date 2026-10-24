@@ -15,6 +15,11 @@ class BehaviorProfile:
     tolerance: float
     noise_ratio: float
     logging_probability: float
+    # Systematic deviation from whatever the tolerance model produces, as a proportion of
+    # intake. Tolerance alone can only make a user fall short of a demanding plan; this
+    # expresses a user who departs from an achievable plan of their own accord, which is
+    # the only way to model someone restricting further than they were asked to.
+    intake_bias: float = 0.0
 
 
 @dataclass
@@ -107,6 +112,40 @@ SCENARIOS: list[Scenario] = [
         behavior=BehaviorProfile(tolerance=0.08, noise_ratio=0.06, logging_probability=0.85),
         goal_weight_kg=73.0,
         seed=55,
+    ),
+    Scenario(
+        name="weight_loss_over_restricting",
+        description="Weight loss where the user restricts further than the plan asks",
+        profile=UserProfile(
+            name="Synthetic WL-4",
+            age=28,
+            sex=Sex.FEMALE,
+            height_cm=165.0,
+            weight_kg=68.0,
+            activity_level=ActivityLevel.LIGHT,
+            goal_type=GoalType.WEIGHT_LOSS,
+        ),
+        behavior=BehaviorProfile(
+            tolerance=0.25, noise_ratio=0.05, logging_probability=0.90, intake_bias=-0.20
+        ),
+        goal_weight_kg=61.0,
+        seed=77,
+    ),
+    Scenario(
+        name="muscle_gain_low_tolerance",
+        description="Muscle gain where the surplus is well beyond what the user sustains",
+        profile=UserProfile(
+            name="Synthetic MG-2",
+            age=26,
+            sex=Sex.MALE,
+            height_cm=180.0,
+            weight_kg=74.0,
+            activity_level=ActivityLevel.ACTIVE,
+            goal_type=GoalType.MUSCLE_GAIN,
+        ),
+        behavior=BehaviorProfile(tolerance=0.03, noise_ratio=0.06, logging_probability=0.85),
+        goal_weight_kg=77.0,
+        seed=88,
     ),
     Scenario(
         name="weight_loss_safety_risk",

@@ -64,7 +64,11 @@ class SimulationRun:
 
 
 def _daily_intake(
-    target_kcal: int, tdee: float, tolerance: float, gives_feedback: bool
+    target_kcal: int,
+    tdee: float,
+    tolerance: float,
+    gives_feedback: bool,
+    intake_bias: float = 0.0,
 ) -> tuple[float, float]:
     """Returns the intake the synthetic user settles on, plus the noise ratio multiplier.
 
@@ -73,13 +77,13 @@ def _daily_intake(
     """
     required_change = (target_kcal - tdee) / tdee
     if abs(required_change) <= tolerance:
-        return float(target_kcal), 1.0
+        return float(target_kcal) * (1 + intake_bias), 1.0
 
     direction = 1.0 if required_change > 0 else -1.0
     tolerable_target = tdee * (1 + direction * tolerance)
     compensation = COMPENSATION_FACTOR * (1 - FEEDBACK_EFFECT if gives_feedback else 1.0)
     intake = target_kcal + (tolerable_target - target_kcal) * compensation
-    return intake, UNSUSTAINABLE_NOISE_MULTIPLIER
+    return intake * (1 + intake_bias), UNSUSTAINABLE_NOISE_MULTIPLIER
 
 
 def _write_meal_logs(
@@ -149,7 +153,11 @@ async def simulate(
                 bmr = calculate_bmr(user.sex, weight, user.height_cm, user.age)
                 tdee = calculate_tdee(bmr, user.activity_level)
                 base_intake, noise_multiplier = _daily_intake(
-                    plan.calorie_target, tdee, scenario.behavior.tolerance, gives_feedback
+                    plan.calorie_target,
+                    tdee,
+                    scenario.behavior.tolerance,
+                    gives_feedback,
+                    scenario.behavior.intake_bias,
                 )
                 noise = rng.gauss(0, scenario.behavior.noise_ratio * noise_multiplier)
                 intake = round(base_intake * (1 + noise))
