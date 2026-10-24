@@ -11,6 +11,26 @@ from app.domain.user_profile import ActivityLevel, GoalType, Role, Sex, UserProf
 from app.services.nutritionist_service import UserHistory, UserOverview
 
 
+class MedicalHistory(BaseModel):
+    """The minimum history a dietitian identified as required before issuing a plan."""
+
+    allergies: list[str] = []
+    intolerances: list[str] = []
+    medical_conditions: list[str] = []
+    family_history: list[str] = []
+    medications: list[str] = []
+    food_dislikes: list[str] = []
+
+
+class ScreeningAnswers(BaseModel):
+    """Signals that may only trigger a referral; they never influence a plan."""
+
+    recent_weight_fluctuation: bool = False
+    difficult_relationship_with_food: bool = False
+    perceives_self_as_overweight: bool = False
+    previous_diet_attempts: int = 0
+
+
 class UserCreate(BaseModel):
     name: str
     age: int
@@ -20,6 +40,8 @@ class UserCreate(BaseModel):
     activity_level: ActivityLevel
     goal_type: GoalType
     role: Role = Role.USER
+    history: MedicalHistory = MedicalHistory()
+    screening: ScreeningAnswers = ScreeningAnswers()
 
     def to_domain(self) -> UserProfile:
         return UserProfile(
@@ -31,6 +53,8 @@ class UserCreate(BaseModel):
             activity_level=self.activity_level,
             goal_type=self.goal_type,
             role=self.role,
+            **self.history.model_dump(),
+            **self.screening.model_dump(),
         )
 
 
@@ -47,6 +71,8 @@ class UserRead(BaseModel):
     adherence_level: float
     difficulties: list[str]
     current_plan_id: int | None
+    history: MedicalHistory
+    screening: ScreeningAnswers
 
     @classmethod
     def from_domain(cls, profile: UserProfile) -> "UserRead":
@@ -63,6 +89,20 @@ class UserRead(BaseModel):
             adherence_level=profile.adherence_level,
             difficulties=profile.difficulties,
             current_plan_id=profile.current_plan_id,
+            history=MedicalHistory(
+                allergies=profile.allergies,
+                intolerances=profile.intolerances,
+                medical_conditions=profile.medical_conditions,
+                family_history=profile.family_history,
+                medications=profile.medications,
+                food_dislikes=profile.food_dislikes,
+            ),
+            screening=ScreeningAnswers(
+                recent_weight_fluctuation=profile.recent_weight_fluctuation,
+                difficult_relationship_with_food=profile.difficult_relationship_with_food,
+                perceives_self_as_overweight=profile.perceives_self_as_overweight,
+                previous_diet_attempts=profile.previous_diet_attempts,
+            ),
         )
 
 

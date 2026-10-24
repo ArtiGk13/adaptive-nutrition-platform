@@ -27,6 +27,18 @@ class UserProfileORM(Base):
     adherence_level: Mapped[float] = mapped_column(default=0.0)
     difficulties: Mapped[list] = mapped_column(JSON, default=list)
     current_plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    allergies: Mapped[list] = mapped_column(JSON, default=list)
+    intolerances: Mapped[list] = mapped_column(JSON, default=list)
+    medical_conditions: Mapped[list] = mapped_column(JSON, default=list)
+    family_history: Mapped[list] = mapped_column(JSON, default=list)
+    medications: Mapped[list] = mapped_column(JSON, default=list)
+    food_dislikes: Mapped[list] = mapped_column(JSON, default=list)
+    recent_weight_fluctuation: Mapped[bool] = mapped_column(Boolean, default=False)
+    difficult_relationship_with_food: Mapped[bool] = mapped_column(Boolean, default=False)
+    perceives_self_as_overweight: Mapped[bool] = mapped_column(Boolean, default=False)
+    previous_diet_attempts: Mapped[int] = mapped_column(Integer, default=0)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 

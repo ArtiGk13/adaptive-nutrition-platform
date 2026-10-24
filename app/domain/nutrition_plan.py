@@ -49,9 +49,10 @@ STAGED_BMI_WHEN_OVERWEIGHT: dict[Sex, float] = {
     Sex.MALE: 22.7,
 }
 
-# Presentation default for spreading the daily target across meals. Unlike every other
-# constant here this one carries NO clinical backing: the reviewing dietitian did not
-# recognise meal-level distribution as standard practice. Treat it as a display choice.
+# A meal breakdown is necessary: without one there is no usable meal plan, as the
+# reviewing dietitian pointed out. These particular proportions, however, are not
+# validated; she did not recognise any standard split. Treat the shape as required and
+# the numbers as a default.
 MEAL_SLOT_RATIOS: dict[str, float] = {
     "breakfast": 0.25,
     "lunch": 0.35,

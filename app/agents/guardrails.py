@@ -126,10 +126,55 @@ def check_macro_distribution(plan: NutritionPlan) -> GuardrailResult:
     )
 
 
+def check_declared_conditions(profile: UserProfile) -> GuardrailResult:
+    """A declared illness ends the system's involvement, on the reviewing dietitian's
+    instruction that a plan should not be issued where disease is present.
+
+    Medications are collected but do not themselves refer, since no such rule was given
+    and inventing one would exceed what was validated.
+    """
+    if profile.medical_conditions:
+        return GuardrailResult(
+            passed=False,
+            code="declared_condition",
+            message=(
+                f"Declared medical condition ({', '.join(profile.medical_conditions)}) "
+                "requires assessment by a dietitian."
+            ),
+        )
+    return GuardrailResult(True, "declared_condition", "No medical condition declared.")
+
+
+def check_eating_disorder_signals(profile: UserProfile) -> GuardrailResult:
+    """Screening signals supplied by the reviewing dietitian.
+
+    Any single signal refers rather than being combined into a score: the system is not a
+    diagnostic instrument, and referring too readily is the safe direction of error. The
+    count of previous attempts is recorded but not thresholded, since no threshold was given.
+    """
+    signals = []
+    if profile.difficult_relationship_with_food:
+        signals.append("self-reported difficult relationship with food")
+    if profile.recent_weight_fluctuation:
+        signals.append("recent weight fluctuation")
+    if profile.perceives_self_as_overweight and profile.bmi < MIN_HEALTHY_BMI:
+        signals.append(f"perceives self as overweight at BMI {profile.bmi:.1f}")
+
+    if signals:
+        return GuardrailResult(
+            passed=False,
+            code="eating_disorder_signal",
+            message="Screening signals require assessment by a specialist: " + "; ".join(signals),
+        )
+    return GuardrailResult(True, "eating_disorder_signal", "No screening signals present.")
+
+
 def run_profile_checks(profile: UserProfile, logs: list[LogEntry]) -> list[GuardrailResult]:
     """Checks about the person, which apply whether or not a new plan is being proposed."""
     return [
         check_supported_age(profile),
+        check_declared_conditions(profile),
+        check_eating_disorder_signals(profile),
         check_underweight_goal(profile),
         check_rapid_weight_loss(profile, logs),
     ]

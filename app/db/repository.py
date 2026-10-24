@@ -46,6 +46,16 @@ def _profile_to_domain(row: UserProfileORM) -> UserProfile:
         current_plan_id=row.current_plan_id,
         created_at=row.created_at,
         updated_at=row.updated_at,
+        allergies=list(row.allergies or []),
+        intolerances=list(row.intolerances or []),
+        medical_conditions=list(row.medical_conditions or []),
+        family_history=list(row.family_history or []),
+        medications=list(row.medications or []),
+        food_dislikes=list(row.food_dislikes or []),
+        recent_weight_fluctuation=row.recent_weight_fluctuation,
+        difficult_relationship_with_food=row.difficult_relationship_with_food,
+        perceives_self_as_overweight=row.perceives_self_as_overweight,
+        previous_diet_attempts=row.previous_diet_attempts,
     )
 
 
@@ -105,6 +115,16 @@ def create_user(session: Session, profile: UserProfile) -> UserProfile:
         role=profile.role.value,
         adherence_level=profile.adherence_level,
         difficulties=list(profile.difficulties),
+        allergies=list(profile.allergies),
+        intolerances=list(profile.intolerances),
+        medical_conditions=list(profile.medical_conditions),
+        family_history=list(profile.family_history),
+        medications=list(profile.medications),
+        food_dislikes=list(profile.food_dislikes),
+        recent_weight_fluctuation=profile.recent_weight_fluctuation,
+        difficult_relationship_with_food=profile.difficult_relationship_with_food,
+        perceives_self_as_overweight=profile.perceives_self_as_overweight,
+        previous_diet_attempts=profile.previous_diet_attempts,
     )
     session.add(row)
     session.commit()

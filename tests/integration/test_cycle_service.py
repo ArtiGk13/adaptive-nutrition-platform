@@ -91,6 +91,28 @@ async def test_onboarding_refuses_users_outside_supported_age(session, sample_pr
     assert repository.get_active_plan(session, user.user_id) is None
 
 
+async def test_onboarding_refuses_users_with_a_declared_condition(session, sample_profile):
+    sample_profile.medical_conditions = ["hypertension"]
+    user = repository.create_user(session, sample_profile)
+
+    plan, decision = await cycle_service.create_initial_plan(session, user.user_id)
+
+    assert plan is None
+    assert decision.decision_type == DecisionType.FLAG_REFERRAL
+    assert "declared_condition" in decision.failed_checks
+
+
+async def test_onboarding_refuses_users_showing_screening_signals(session, sample_profile):
+    sample_profile.difficult_relationship_with_food = True
+    user = repository.create_user(session, sample_profile)
+
+    plan, decision = await cycle_service.create_initial_plan(session, user.user_id)
+
+    assert plan is None
+    assert decision.decision_type == DecisionType.FLAG_REFERRAL
+    assert "eating_disorder_signal" in decision.failed_checks
+
+
 async def test_cycle_for_unknown_user_raises(session):
     with pytest.raises(LookupError):
         await cycle_service.run_cycle(session, 999)

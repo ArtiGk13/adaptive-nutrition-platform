@@ -56,6 +56,13 @@ on every cycle, whether or not a new plan is proposed:
 - `check_supported_age` — the system targets adults aged 18–65; outside that range it refers
   the user to a specialist, since different reference tables apply over 65 (NEMO, 2019) and
   growth makes them inapplicable under 18
+- `check_declared_conditions` — any declared illness ends the system's involvement and refers
+  to a dietitian. Medications are recorded but do not themselves refer, since no such rule was
+  given during review
+- `check_eating_disorder_signals` — self-reported difficult relationship with food, recent
+  weight fluctuation, or perceiving oneself as overweight while underweight. Any single signal
+  refers: the system is not a diagnostic instrument, and referring too readily is the safe
+  direction of error. These answers may only cause a referral and never influence a plan
 - `check_underweight_goal` — BMI below 18.5 combined with a weight-loss goal
 - `check_rapid_weight_loss` — logged weight falling faster than 1 kg/week
 
@@ -106,6 +113,10 @@ and both referral criteria. Two corrections came out of the review and are imple
   DRI (2010) ranges.
 - **Age range** — the system performed no age check at all. It is now explicitly limited to
   adults aged 18–65.
+- **Medical history** — the system asked nothing about health before issuing a plan. It now
+  records allergies, intolerances, conditions, family history, medications and food dislikes,
+  and refuses to plan where an illness is declared. A short screening set covering weight
+  fluctuation, past dieting and body image was added on the same advice, used only to refer.
 
 ### Target body weight
 
@@ -116,10 +127,13 @@ falls below that threshold a regenerated plan moves the target into the desirabl
 (21.3–22.1 for women, 21.9–22.4 for men, midpoint used). Both the staging rule and the
 values come from the dietitian review.
 
-**Known limitation:** the meal-level split (breakfast 25% / lunch 35% / dinner 30% / snack 10%)
-is the one assumption with no clinical backing — the reviewing dietitian did not recognise
-meal distribution as standard practice. It is a presentation default for spreading the daily
-target, not a clinical recommendation, and should be described as such.
+**Known limitation:** the specific meal split (breakfast 25% / lunch 35% / dinner 30% /
+snack 10%) is not validated. A meal breakdown itself is necessary, since without one there is
+no usable meal plan, but the reviewer did not recognise any standard set of proportions. The
+shape is therefore required and the numbers are a default.
+
+**Deliberately out of scope:** questions on vomiting, laxative use and purging, which the
+reviewer identified as clinically sensitive and beyond what this system should ask.
 
 ## Evaluation
 
