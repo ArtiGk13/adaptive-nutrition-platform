@@ -19,3 +19,6 @@ Thumbs.db
 desktop.ini
 ~$*.docx
 ~$*.doc
+
+# Backups the surgical docx editor writes before each save
+*.docx.bak
