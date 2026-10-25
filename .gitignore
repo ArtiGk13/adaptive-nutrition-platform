@@ -22,3 +22,7 @@ desktop.ini
 
 # Backups the surgical docx editor writes before each save
 *.docx.bak
+
+# Reference material: published PDFs, kept locally and not redistributed
+docs/sources/
+PG Dissertation Handbook*.pdf
