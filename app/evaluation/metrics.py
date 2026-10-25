@@ -30,6 +30,8 @@ class RunMetrics:
     referrals: int
     plan_versions: int
     overall_effectiveness: float
+    refused_at_onboarding: bool = False
+    refusal_reason: str = ""
 
     def as_row(self) -> dict:
         return asdict(self)
@@ -49,6 +51,27 @@ def _goal_progress(run: SimulationRun) -> float:
 
 
 def compute_metrics(run: SimulationRun) -> RunMetrics:
+    if run.refused_at_onboarding:
+        # Nothing was planned, so there is nothing to score. Reporting zeros here would be
+        # read as poor performance rather than as a refusal, so the flag carries the meaning.
+        return RunMetrics(
+            scenario=run.scenario.name,
+            strategy=run.strategy.value,
+            mean_adherence=0.0,
+            consistency=0.0,
+            suitability=0.0,
+            logging_ratio=0.0,
+            weight_change_kg=0.0,
+            goal_progress=0.0,
+            goal_completed=False,
+            unsafe_weeks=0,
+            referrals=1,
+            plan_versions=0,
+            overall_effectiveness=0.0,
+            refused_at_onboarding=True,
+            refusal_reason=run.refusal_reason,
+        )
+
     daily_adherence = [
         _clip(1 - abs(day.intake_kcal - day.target_kcal) / day.target_kcal)
         for day in run.days
@@ -85,9 +108,14 @@ def compute_metrics(run: SimulationRun) -> RunMetrics:
 
 
 def summarise_by_strategy(results: list[RunMetrics]) -> dict[str, dict[str, float]]:
+    """Averages exclude scenarios the Supervisor refused, which produced no run to measure."""
     summary: dict[str, dict[str, float]] = {}
     for strategy in Strategy:
-        rows = [row for row in results if row.strategy == strategy.value]
+        rows = [
+            row
+            for row in results
+            if row.strategy == strategy.value and not row.refused_at_onboarding
+        ]
         if not rows:
             continue
         summary[strategy.value] = {

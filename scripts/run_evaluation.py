@@ -19,11 +19,24 @@ def main() -> None:
     print(PER_RUN_HEADER)
     print("-" * len(PER_RUN_HEADER))
     for row in results:
+        if row.refused_at_onboarding:
+            print(
+                f"{row.scenario:<28}{row.strategy:<14}"
+                f"  refused at onboarding ({row.refusal_reason})"
+            )
+            continue
         print(
             f"{row.scenario:<28}{row.strategy:<14}{row.mean_adherence:>7.2f}"
             f"{row.consistency:>9.2f}{row.suitability:>7.2f}{row.goal_progress:>7.2f}"
             f"{row.unsafe_weeks:>8}{row.referrals:>5}{row.plan_versions:>6}"
             f"{row.overall_effectiveness:>7.2f}"
+        )
+
+    refused = sorted({row.scenario for row in results if row.refused_at_onboarding})
+    if refused:
+        print(
+            f"\nExcluded from the averages, refused at onboarding and therefore not run: "
+            f"{', '.join(refused)}"
         )
 
     print("\nSummary by strategy")

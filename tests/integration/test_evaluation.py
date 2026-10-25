@@ -70,7 +70,22 @@ async def test_runner_produces_csv(tmp_path):
 
 
 @pytest.mark.parametrize("scenario", SCENARIOS, ids=lambda s: s.name)
-async def test_every_scenario_starts_with_an_approved_plan(scenario):
+async def test_every_scenario_either_runs_or_is_refused_with_a_reason(scenario):
     run = await simulate(scenario, Strategy.FIXED, weeks=1)
-    assert run.days
-    assert run.days[0].target_kcal > 0
+    if run.refused_at_onboarding:
+        assert run.refusal_reason
+        assert not run.days
+    else:
+        assert run.days
+        assert run.days[0].target_kcal > 0
+
+
+async def test_a_refused_scenario_is_excluded_from_the_averages():
+    """A refusal is not a score of zero, and must not be averaged as if it were."""
+    refused = next(
+        (s for s in SCENARIOS if s.name == "weight_loss_safety_risk"), None
+    )
+    assert refused is not None
+    metrics = compute_metrics(await simulate(refused, Strategy.ADAPTIVE, weeks=2))
+    assert metrics.refused_at_onboarding
+    assert summarise_by_strategy([metrics]) == {}

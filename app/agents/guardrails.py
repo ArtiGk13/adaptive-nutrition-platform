@@ -169,6 +169,32 @@ def check_eating_disorder_signals(profile: UserProfile) -> GuardrailResult:
     return GuardrailResult(True, "eating_disorder_signal", "No screening signals present.")
 
 
+def check_target_weight_reached(plan: NutritionPlan, profile: UserProfile) -> GuardrailResult:
+    """Stop once the user has reached the target weight and still wants to lose more.
+
+    The reviewing dietitian gave two instructions that meet here. Asked whether to stop a
+    user already at their ideal weight who seeks further loss, she answered plainly that it
+    should. Asked what to do about sustained under-eating, she said to refer once weight has
+    fallen well below the agreed target. Both reduce to the same condition, which avoids
+    inventing a margin she did not specify.
+    """
+    if (
+        profile.goal_type == GoalType.WEIGHT_LOSS
+        and plan.target_weight_kg is not None
+        and profile.weight_kg <= plan.target_weight_kg
+    ):
+        return GuardrailResult(
+            passed=False,
+            code="target_weight_reached",
+            message=(
+                f"Weight {profile.weight_kg:.1f} kg has reached the target of "
+                f"{plan.target_weight_kg:.1f} kg while the goal remains weight loss. "
+                "Further loss requires assessment by a dietitian."
+            ),
+        )
+    return GuardrailResult(True, "target_weight_reached", "Target weight not yet reached.")
+
+
 def run_profile_checks(profile: UserProfile, logs: list[LogEntry]) -> list[GuardrailResult]:
     """Checks about the person, which apply whether or not a new plan is being proposed."""
     return [
@@ -186,6 +212,7 @@ def run_plan_checks(plan: NutritionPlan, profile: UserProfile) -> list[Guardrail
         check_min_calories(plan.calorie_target, profile.sex),
         check_max_deficit_rate(plan.calorie_target, profile),
         check_macro_distribution(plan),
+        check_target_weight_reached(plan, profile),
     ]
 
 

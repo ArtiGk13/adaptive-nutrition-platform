@@ -80,6 +80,7 @@ class SupervisorAgent:
             "age_out_of_range",
             "declared_condition",
             "eating_disorder_signal",
+            "target_weight_reached",
         }
         needs_referral = any(failure.code in referral_codes for failure in failures)
         return self._build(

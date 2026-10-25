@@ -61,6 +61,10 @@ class SimulationRun:
     final_plan: NutritionPlan | None = None
     final_assessment: AssessmentResult | None = None
     final_action: AdaptationAction | None = None
+    # Set when the Supervisor refuses to issue a first plan at all, in which case there is
+    # no run to measure and the scenario reports a refusal instead of metrics.
+    refused_at_onboarding: bool = False
+    refusal_reason: str = ""
 
 
 def _daily_intake(
@@ -131,9 +135,7 @@ async def simulate(
 
     try:
         user = repository.create_user(session, copy.deepcopy(scenario.profile))
-        plan, _ = await coordinator.run_onboarding(session, user)
-        if plan is None:
-            raise RuntimeError(f"Supervisor rejected the initial plan for {scenario.name}")
+        plan, decision = await coordinator.run_onboarding(session, user)
 
         run = SimulationRun(
             scenario=scenario,
@@ -141,6 +143,11 @@ async def simulate(
             start_weight_kg=user.weight_kg,
             final_weight_kg=user.weight_kg,
         )
+        if plan is None:
+            run.refused_at_onboarding = True
+            run.refusal_reason = ", ".join(decision.failed_checks) or decision.notes
+            return run
+
         gives_feedback = strategy in (Strategy.ADAPTIVE, Strategy.NON_ADAPTIVE)
         weight = user.weight_kg
         start_date = datetime.now(timezone.utc) - timedelta(days=weeks * 7)

@@ -49,10 +49,11 @@ STAGED_BMI_WHEN_OVERWEIGHT: dict[Sex, float] = {
     Sex.MALE: 22.7,
 }
 
-# A meal breakdown is necessary: without one there is no usable meal plan, as the
-# reviewing dietitian pointed out. These particular proportions, however, are not
-# validated; she did not recognise any standard split. Treat the shape as required and
-# the numbers as a default.
+# Reviewed and accepted by the reviewing dietitian, who also suggested 30% breakfast with
+# 25% dinner as an alternative so the day starts with more energy, and noted that the split
+# should ideally follow when the user is actually active: a sedentary morning and an active
+# afternoon warrants a larger lunch and dinner. Adapting to activity timing would require
+# knowing it, which the system does not yet capture.
 MEAL_SLOT_RATIOS: dict[str, float] = {
     "breakfast": 0.25,
     "lunch": 0.35,

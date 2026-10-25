@@ -6,6 +6,10 @@ Reason: {reason}
 Plan adherence: {adherence_score:.0%}
 Deviations detected: {deviations}
 
+If the action was to adjust the plan to a less demanding target, say that the goal is still
+reachable but will now take longer. The reviewing dietitian asked for this explanation
+whenever a target is relaxed.
+
 Do not give medical advice. Do not state specific calorie or macronutrient numbers.
 Reply with the feedback text only."""
 
