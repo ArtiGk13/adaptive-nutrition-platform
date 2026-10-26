@@ -127,6 +127,21 @@ def calculate_ideal_weight(profile: UserProfile) -> float:
     return round(target_bmi_for(profile) * height_m**2, 1)
 
 
+def plan_target_weight(profile: UserProfile) -> float | None:
+    """The target weight a plan should carry, or None where the notion does not apply.
+
+    A weight derived from a desirable BMI describes what the user should come down to, so
+    it means something only while the goal is weight loss. Shown for muscle gain it states
+    a target below the user's current weight to someone trying to gain, which the
+    reviewing dietitian challenged on sight; shown for maintenance it contradicts the goal
+    of staying where they are. What the target ought to be for those goals is a clinical
+    question the review did not settle, so none is invented here.
+    """
+    if profile.goal_type != GoalType.WEIGHT_LOSS:
+        return None
+    return calculate_ideal_weight(profile)
+
+
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 

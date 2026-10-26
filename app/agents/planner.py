@@ -2,8 +2,8 @@ from app.domain.nutrition_plan import (
     NutritionPlan,
     build_meal_structure,
     calculate_calorie_target,
-    calculate_ideal_weight,
     calculate_macro_targets,
+    plan_target_weight,
 )
 from app.domain.user_profile import UserProfile
 
@@ -18,7 +18,7 @@ class PlannerAgent:
             calorie_target=calorie_target,
             macro_targets=calculate_macro_targets(calorie_target, profile),
             meal_structure=build_meal_structure(calorie_target),
-            target_weight_kg=calculate_ideal_weight(profile),
+            target_weight_kg=plan_target_weight(profile),
             rationale=(
                 f"Initial plan from Mifflin-St Jeor for goal "
                 f"'{profile.goal_type.value}' and activity level "
