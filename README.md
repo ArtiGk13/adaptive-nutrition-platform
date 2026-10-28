@@ -72,6 +72,11 @@ Checks about the **numbers in a proposed plan** (`run_plan_checks`):
 - `check_max_deficit_rate` — maximum permitted deficit as a share of daily expenditure
 - `check_macro_distribution` — macros within the acceptable distribution ranges (DRIs, 2010):
   protein 10–35%, fat 20–35%, carbohydrates 45–65% of total energy
+- `check_target_weight_reached` — the user has reached the plan's target weight and is still
+  pursuing weight loss. Added after the second round of clinical review, which gave two
+  instructions that meet in this one condition: stop a user already at their ideal weight who
+  seeks further loss, and refer once sustained under-eating has taken weight well below the
+  agreed target
 
 Every decision is logged (`supervisor` logger) and stored in the `supervisor_decisions` table
 for traceability.
@@ -103,9 +108,12 @@ model is already loaded, which is the main cost of keeping inference local.
 
 ### Clinical validation
 
-The clinical assumptions were reviewed by a qualified dietitian (review form in `docs/`).
-Confirmed as correct: the Mifflin-St Jeor formula, the calorie floors, the maximum deficit,
-and both referral criteria. Two corrections came out of the review and are implemented:
+A qualified dietitian reviewed the system in three rounds (both instruments in `docs/`).
+Confirmed as correct and unchanged: the Mifflin-St Jeor formula, the calorie floors, the
+maximum deficit, and both referral criteria.
+
+**First round — sixteen assumptions on a structured form.** Three defects and one
+clarification:
 
 - **Macronutrient distribution** — protein is prescribed per kilogram of body weight, so on a
   reduced calorie target its share of energy inflated and carbohydrates fell below the
@@ -117,23 +125,61 @@ and both referral criteria. Two corrections came out of the review and are imple
   records allergies, intolerances, conditions, family history, medications and food dislikes,
   and refuses to plan where an illness is declared. A short screening set covering weight
   fluctuation, past dieting and body image was added on the same advice, used only to refer.
+- **Target body weight** — the reviewer set out how it is derived and staged, which enabled the
+  feature described below. The system had no notion of a target weight before this.
+
+**Second round — four follow-up questions.** The meal split was accepted, and the adaptation
+policy was put to her for the first time:
+
+- **The adaptation policy is endorsed in substance and qualified in mechanism.** Asked whether
+  a target should be relaxed towards what the user actually eats, she said the target should
+  initially be **held**, and relaxed when the user *reports* being unable to follow it or
+  *asks* for it to be relaxed, with an explanation that the goal remains reachable over a
+  longer period. This system relaxes on inferred behaviour rather than on request, so the
+  mechanism differs from the practice it was modelled on. The explanation she specified was
+  added to the feedback the Tutor produces when a target is relaxed.
+- **A user already at their target weight who seeks further loss should be stopped**, which is
+  now `check_target_weight_reached`.
+
+**Third round — blind review of generated output.** Twelve cases, drawn from the adaptive and
+non-adaptive configurations, shuffled and unlabelled. One further defect:
+
+- **Target weight was being stated whatever the goal.** Shown a muscle-gain plan, the reviewer
+  asked why a user wanting to gain muscle was being told to lose weight: the plan named a
+  target of 67.8 kg for a user who weighed 70 kg and was trying to reach 73. A weight derived
+  from a desirable BMI describes what a user should come *down* to. Plans now state a target
+  weight for weight loss only, and no value is invented for the other goals.
+
+Nothing else was found by any other means: the tests asserted the formula, which was right,
+and the evaluation never reads the field.
 
 ### Target body weight
 
-Each plan records a `target_weight_kg` derived from a desirable BMI rather than asking the
-user to invent a number. The target is **staged**: while the user is overweight or obese
-(BMI ≥ 25) the higher initial value applies — 22.4 for women, 22.7 for men — and once BMI
-falls below that threshold a regenerated plan moves the target into the desirable range
+A **weight-loss** plan records a `target_weight_kg` derived from a desirable BMI rather than
+asking the user to invent a number. The target is **staged**: while the user is overweight or
+obese (BMI ≥ 25) the higher initial value applies — 22.4 for women, 22.7 for men — and once
+BMI falls below that threshold a regenerated plan moves the target into the desirable range
 (21.3–22.1 for women, 21.9–22.4 for men, midpoint used). Both the staging rule and the
 values come from the dietitian review.
 
-**Known limitation:** the specific meal split (breakfast 25% / lunch 35% / dinner 30% /
-snack 10%) is not validated. A meal breakdown itself is necessary, since without one there is
-no usable meal plan, but the reviewer did not recognise any standard set of proportions. The
-shape is therefore required and the numbers are a default.
+Maintenance and muscle-gain plans carry **no** target weight (`plan_target_weight` returns
+`None`). A weight derived from BMI describes what a user should come down to, so stating it
+for someone trying to gain inverts the plan's own objective — the defect the blind review
+found. What the target ought to be for those goals is a clinical question the review did not
+settle, so none is invented.
+
+**Known limitation:** no body composition analysis, so a target weight cannot distinguish fat
+from lean mass. The reviewer raised this about her own answer, and again when reading the
+output: for a muscle-gain user, body weight could be held while composition changes.
 
 **Deliberately out of scope:** questions on vomiting, laxative use and purging, which the
-reviewer identified as clinically sensitive and beyond what this system should ask.
+reviewer identified as clinically sensitive and beyond what this system should ask. The
+eating-disorder screening is therefore partial by design.
+
+The meal split (breakfast 25% / lunch 35% / dinner 30% / snack 10%) was **accepted** in the
+second round. The reviewer offered 30% breakfast with 25% dinner as an alternative and added
+that the division should ideally follow the user's pattern of activity through the day, which
+would require capturing when they are active. That is not implemented.
 
 ## Evaluation
 
@@ -170,23 +216,59 @@ for that user), `goal_progress`, `unsafe_weeks` (an independent safety check app
 strategy) and `referrals`. `overall_effectiveness` is a weighted sum with explicit weights in
 [app/evaluation/metrics.py](app/evaluation/metrics.py).
 
-**Usability** and **content-level quality of the suggestions** are not measured here — they
-require the dietitian's expert review.
+**Usability** is not measured here. **Content-level quality of the suggestions** is covered by
+the blind expert review reported below, not by the simulation.
 
-### Results (12 weeks, 6 scenarios)
+### Results (12 weeks, 8 scenarios defined, 7 measured)
 
-| Strategy | Adherence | Consistency | Suitability | Progress | Referrals | Overall |
+`weight_loss_safety_risk` begins from a low body weight with a weight-loss goal, and
+`check_target_weight_reached` now refuses to plan for that user at all. All three strategies
+refuse identically, so the scenario exercises the referral path and yields no run to score. It
+is excluded from the averages rather than counted as zero.
+
+| Strategy | Adherence | Consistency | Suitability | Progress | Unsafe weeks | Overall |
 |---|---|---|---|---|---|---|
-| adaptive | 0.94 | 0.89 | **0.74** | 0.68 | 1 | **0.79** |
-| non_adaptive | 0.92 | 0.87 | 0.50 | 0.74 | 0 | 0.76 |
-| fixed | 0.92 | 0.87 | 0.50 | 0.73 | 0 | 0.75 |
+| adaptive | 0.909 | 0.879 | **0.631** | 0.712 | 0 | **0.778** |
+| non_adaptive | 0.892 | 0.863 | 0.429 | 0.762 | 0 | 0.748 |
+| fixed | 0.890 | 0.862 | 0.429 | 0.743 | 0 | 0.740 |
 
-The headline finding is a **trade-off**: the adaptive strategy substantially improves plan
-suitability and adherence at the cost of slower progress towards the goal, because it converges
-on targets the user can actually sustain instead of insisting on a plan that gets ignored. In
-the scenarios where the initial plan was already appropriate (`weight_loss_consistent`,
-`maintenance_stable`) the three strategies are identical, as expected. In the safety scenario,
-only `adaptive` detected the need for a referral.
+The headline finding is a **trade-off**: adaptation improves plan suitability and adherence at
+the cost of slower progress towards the goal, because it converges on targets the user can
+actually sustain instead of insisting on a plan that gets ignored.
+
+Two qualifications matter more than the averages. First, adaptation changes the composite in
+only **two** of the seven measured scenarios, `weight_loss_low_tolerance` and
+`weight_loss_poor_logging`; the averaged difference comes almost entirely from those. Where
+the initial plan was already within the user's tolerance the configurations are
+indistinguishable, which is the correct behaviour rather than a null result. Second, the
+mechanism is **structurally unreachable for muscle gain**: the behavioural model moves intake
+at most a fixed fraction back towards what the user tolerates, so a 10% goal adjustment can
+produce an observed deviation of at most 7.3%, below the 8% `BIAS_THRESHOLD`. Expressing the
+threshold relative to the goal adjustment would address this.
+
+### Expert review of generated output
+
+Twelve cases rated blind on appropriateness, safety and feedback quality (1–5), plus a
+yes/no on whether the reviewer would give the output to a client of her own.
+
+| | Appropriateness | Safety | Feedback | Would give |
+|---|---|---|---|---|
+| adaptive | 3.50 | 4.33 | 5.00 | 5 of 6 |
+| non_adaptive | 4.00 | 4.33 | 4.83 | 4 of 6 |
+| all twelve | 3.75 | 4.33 | 4.92 | 9 of 12 |
+
+Read at face value this favours the configuration that does **not** adapt. It cannot be read
+that way. Adaptation changes a plan only where a sustained deviation is detected, so four of
+the six scenario pairs issued were **numerically identical** across the two configurations and
+the twelve cases held only eight distinct plans. The reviewer rated three of those four
+identical pairs differently — including opposite yes/no verdicts on plans identical to the
+kilocalorie — so two of the three rating points separating the configurations come from pairs
+with nothing to separate. The instrument cannot distinguish them; the comparison above rests
+on the simulation alone.
+
+What the review did establish: the target-weight defect, independent confirmation of the
+defect `check_target_weight_reached` had already closed, and feedback quality of 4.92 from a
+7B model running locally, rated 5 in eleven of twelve cases.
 
 ## Layout
 
@@ -210,6 +292,22 @@ Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configure
 
 ## Next steps
 
-- Blind expert review of generated suggestions (sample built by `scripts/build_review_sample.py`)
-- Clinical sign-off on the adaptation policy itself, which the review has not yet covered
-- Content management for the dietitian role, once the shape of that content is decided
+Both items that stood here are done: the adaptation policy has been put to the reviewer, and
+the blind review of generated suggestions has returned. What follows from them:
+
+- **Relax a target on request rather than on inference.** There is currently no way for a user
+  to report that a plan is unmanageable or to ask for it to be eased. Adding that, and holding
+  the target until it is asked for, would align the mechanism with the practice it was modelled
+  on — and would turn the comparison above into one between two defensible policies rather than
+  one defensible and one approximate.
+- **Weight adaptation by the completeness of the record it rests on.** An average drawn from
+  40% logging coverage is currently treated as being as informative as one from a near-complete
+  record, and `weight_loss_poor_logging` shows the cost in lost progress.
+- **Express `BIAS_THRESHOLD` relative to the goal adjustment**, so adaptation is reachable for
+  muscle gain.
+- **Decide what a target weight should mean for maintenance and muscle gain.** A clinical
+  question, not a development one.
+- **A blind instrument built from cases known to differ**, with deliberate duplicates included
+  to measure the reviewer against herself rather than discovering that by accident.
+- **Body composition analysis**, so a target can distinguish fat from lean mass.
+- Content management for the dietitian role, once the shape of that content is decided.
