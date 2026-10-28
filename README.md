@@ -194,6 +194,19 @@ Three strategies are compared on identical synthetic scenarios
 - `non_adaptive` — feedback, but the plan never changes
 - `fixed` — a fixed initial plan with no feedback
 
+### Figures
+
+The two figures in the dissertation are generated from the code and the evaluation data
+rather than drawn by hand, so neither can drift from what the system actually produced:
+
+```bash
+pip install matplotlib        # not a runtime dependency of the application
+.venv\Scripts\python.exe scripts\make_figure_4_1.py    # the architecture and its two flows
+.venv\Scripts\python.exe scripts\make_figure_6_1.py    # read straight from results.csv
+```
+
+Both write a PNG and a PDF at 300 dpi into `docs/figures/`.
+
 ### Synthetic user model
 
 Each scenario defines a **tolerance**: the largest relative change against daily energy
