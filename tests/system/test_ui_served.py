@@ -44,6 +44,25 @@ def test_the_theme_can_be_chosen_and_is_applied_before_paint(client):
     assert "localStorage" in head and "data-theme" in head
 
 
+def test_the_stylesheet_is_balanced(client):
+    """A stray brace does not raise anything: the browser discards the rules after it.
+    One such brace silently stopped the panels being hidden, and the page showed all
+    three at once with nothing in any log to say why."""
+    css = client.get("/style.css").text
+    assert css.count("{") == css.count("}"), "unbalanced braces: rules will be dropped"
+
+    depth = 0
+    for index, char in enumerate(css):
+        depth += (char == "{") - (char == "}")
+        assert depth >= 0, f"closing brace with nothing open at character {index}"
+
+
+def test_the_rules_that_hide_inactive_panels_survive(client):
+    css = client.get("/style.css").text
+    assert ".panel { display: none" in css
+    assert ".panel.active { display: block" in css
+
+
 def test_the_page_fetches_no_external_asset(client):
     """Everything is drawn or styled in place, so the client works with no network."""
     page = client.get("/").text

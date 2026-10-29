@@ -31,6 +31,19 @@ function note(target, message, isError) {
   $(target).textContent = message;
 }
 
+/* ───────────────────────── back to the top ──────────────────────────── */
+
+const toTop = $("#to-top");
+
+addEventListener("scroll", () => {
+  toTop.classList.toggle("on", scrollY > 320);
+}, { passive: true });
+
+toTop.addEventListener("click", () => {
+  const motion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  scrollTo({ top: 0, behavior: motion ? "auto" : "smooth" });
+});
+
 /* ─────────────────────────────── theme ──────────────────────────────── */
 
 /* Without a choice the page follows whatever the browser asks for, which differs
