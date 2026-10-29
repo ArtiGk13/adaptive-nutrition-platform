@@ -12,7 +12,20 @@ python -m venv .venv
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Then open http://127.0.0.1:8000/docs and call `POST /users/1/cycle`.
+Then open http://127.0.0.1:8000 for the web client, or http://127.0.0.1:8000/docs for the
+API documentation, and run an adaptation cycle for the seeded user.
+
+## Web client
+
+A small client is served at the root from `app/static/`: plain HTML, CSS and JavaScript,
+with no framework and no build step, so nothing is added to `requirements.txt`. It holds
+no logic of its own — it calls the same endpoints any other caller would, and renders the
+four stages of a cycle (assessment, adaptation, Supervisor decision, resulting plan) as
+they are returned.
+
+Three screens: profile creation, which requests a plan and shows either the plan or the
+Supervisor's refusal; the user's own plan, logging and cycle; and the dietitian's view of
+every user, those needing referral, and the full decision trail for one user.
 
 Tests:
 
@@ -293,7 +306,8 @@ app/
 ├── llm/         LLM wrapper and prompt templates
 ├── services/    application layer called by the routes
 ├── evaluation/  synthetic scenarios, simulation and comparison metrics
-└── api/         Pydantic schemas and FastAPI routes
+├── api/         Pydantic schemas and FastAPI routes
+└── static/      the web client: one page, one stylesheet, one script
 scripts/         synthetic user seeding, evaluation runner
 tests/           unit / integration / system
 ```

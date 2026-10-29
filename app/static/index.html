@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adaptive Nutrition Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Adaptive Nutrition &amp; Wellness Platform</h1>
+  <p class="sub">A plan is revised from what you actually logged. Every change passes a
+     supervisory check before it is stored.</p>
+</header>
+
+<nav>
+  <button class="tab active" data-panel="panel-new">New user</button>
+  <button class="tab" data-panel="panel-plan">My plan</button>
+  <button class="tab" data-panel="panel-pro">Dietitian</button>
+</nav>
+
+<main>
+
+  <!-- ─────────────────────────── onboarding ─────────────────────────── -->
+  <section id="panel-new" class="panel active">
+    <h2>Create a profile</h2>
+    <p class="hint">The medical history below is the minimum a dietitian identified as
+       required before any plan may be issued.</p>
+
+    <form id="form-user">
+      <div class="grid">
+        <label>Name <input name="name" required value="Maria Georgiou"></label>
+        <label>Age <input name="age" type="number" min="1" max="120" required value="35"></label>
+        <label>Sex
+          <select name="sex">
+            <option value="female">female</option>
+            <option value="male">male</option>
+          </select>
+        </label>
+        <label>Height (cm)
+          <input name="height_cm" type="number" step="0.5" required value="165"></label>
+        <label>Weight (kg)
+          <input name="weight_kg" type="number" step="0.1" required value="78"></label>
+        <label>Activity level
+          <select name="activity_level">
+            <option value="sedentary">sedentary</option>
+            <option value="light" selected>light</option>
+            <option value="moderate">moderate</option>
+            <option value="active">active</option>
+            <option value="very_active">very active</option>
+          </select>
+        </label>
+        <label>Goal
+          <select name="goal_type">
+            <option value="weight_loss" selected>weight loss</option>
+            <option value="maintenance">maintenance</option>
+            <option value="muscle_gain">muscle gain</option>
+          </select>
+        </label>
+      </div>
+
+      <fieldset>
+        <legend>Medical history</legend>
+        <div class="grid">
+          <label>Existing conditions <input name="medical_conditions"
+                 placeholder="comma separated, e.g. type 2 diabetes"></label>
+          <label>Allergies <input name="allergies" placeholder="comma separated"></label>
+          <label>Intolerances <input name="intolerances" placeholder="comma separated"></label>
+          <label>Medications <input name="medications" placeholder="comma separated"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Screening</legend>
+        <p class="hint">These answers may only trigger a referral. They never influence
+           the numbers in a plan.</p>
+        <label class="check"><input type="checkbox" name="recent_weight_fluctuation">
+          Recent large weight fluctuations</label>
+        <label class="check"><input type="checkbox" name="difficult_relationship_with_food">
+          A difficult relationship with food</label>
+        <label class="check"><input type="checkbox" name="perceives_self_as_overweight">
+          Perceives self as overweight</label>
+      </fieldset>
+
+      <button type="submit" class="primary">Create profile and request a plan</button>
+    </form>
+
+    <div id="onboard-result" class="result"></div>
+  </section>
+
+  <!-- ───────────────────────────── the user ─────────────────────────── -->
+  <section id="panel-plan" class="panel">
+    <h2>My plan</h2>
+
+    <div class="row">
+      <label>User id <input id="plan-user" type="number" min="1" value="1"></label>
+      <button id="btn-load" class="primary">Load plan</button>
+    </div>
+
+    <div id="plan-view" class="result"></div>
+
+    <div class="two-col">
+      <form id="form-meal">
+        <h3>Log a meal</h3>
+        <label>Meal
+          <select name="meal_slot">
+            <option value="breakfast">breakfast</option>
+            <option value="lunch">lunch</option>
+            <option value="dinner" selected>dinner</option>
+            <option value="snack">snack</option>
+          </select>
+        </label>
+        <label>What you ate <input name="food_description" required
+               value="pasta with chicken"></label>
+        <label>Estimated kcal
+          <input name="estimated_kcal" type="number" required value="900"></label>
+        <button type="submit">Add meal</button>
+      </form>
+
+      <form id="form-weight">
+        <h3>Log your weight</h3>
+        <label>Weight (kg)
+          <input name="weight_kg" type="number" step="0.1" required value="77.4"></label>
+        <button type="submit">Add weight</button>
+      </form>
+    </div>
+
+    <div id="log-result" class="note"></div>
+
+    <div class="cycle-box">
+      <h3>Run an adaptation cycle</h3>
+      <p class="hint">The Assessment agent reads your logs, the Adaptation agent proposes a
+         response, and the Supervisor decides whether it may be applied.</p>
+      <button id="btn-cycle" class="primary">Run cycle</button>
+    </div>
+
+    <div id="cycle-view" class="result"></div>
+  </section>
+
+  <!-- ─────────────────────────── the dietitian ──────────────────────── -->
+  <section id="panel-pro" class="panel">
+    <h2>Dietitian view</h2>
+    <p class="hint">Restricted to accounts holding the nutritionist role. The caller is
+       identified by a header; there is no authentication, and the dissertation states
+       this as a limitation.</p>
+
+    <div class="row">
+      <label>Your user id <input id="pro-user" type="number" min="1" value="3"></label>
+      <button id="btn-all">All users</button>
+      <button id="btn-flagged" class="primary">Needing referral</button>
+    </div>
+
+    <div id="pro-view" class="result"></div>
+    <div id="pro-history" class="result"></div>
+  </section>
+
+</main>
+
+<footer>
+  MSc dissertation &middot; Athens Tech College / University of York Europe Campus &middot;
+  <a href="/docs">API documentation</a>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

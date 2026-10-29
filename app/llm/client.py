@@ -6,9 +6,12 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+# A fixed string is returned whatever the prompt, so it must not assert anything about
+# the user. An earlier version congratulated them on their consistency, which contradicted
+# the assessment whenever adherence was poor.
 MOCK_RESPONSE = (
-    "You are keeping up with your plan consistently. Stay at this pace and keep "
-    "logging your meals the way you did this week."
+    "Explanatory text is not generated in this configuration. The assessment and the "
+    "decision it accompanies are unaffected."
 )
 
 
