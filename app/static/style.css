@@ -263,6 +263,28 @@ body {
 
 .whoami[hidden] { display: none; }
 
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0 11px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.status .dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.status.ok .dot { background: var(--good); }
+.status.down .dot { background: var(--critical); }
+.status.down { color: var(--critical); }
+
 .side-foot { margin-top: auto; padding: 0 8px; }
 
 .theme-toggle {

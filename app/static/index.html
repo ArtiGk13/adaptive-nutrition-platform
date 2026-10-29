@@ -85,6 +85,7 @@
     </nav>
 
     <p id="whoami" class="whoami" hidden></p>
+    <p id="status" class="status"><span class="dot"></span><span>checking…</span></p>
 
     <div class="side-foot">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
@@ -195,7 +196,8 @@
       </div>
 
       <div class="toolbar">
-        <label>User id <input id="plan-user" type="number" min="1" placeholder="1"></label>
+        <label>Who <select id="plan-pick"><option value="">choose…</option></select></label>
+        <label>or id <input id="plan-user" type="number" min="1" placeholder="1"></label>
         <button id="btn-load">Refresh</button>
         <span class="spacer"></span>
         <button id="btn-cycle" class="primary">Update my plan</button>
@@ -203,6 +205,7 @@
 
       <div id="plan-view" class="result"></div>
       <div id="intake-view" class="result"></div>
+      <div id="weight-view" class="result"></div>
       <div id="entries-view" class="result"></div>
 
       <div class="two-col">
@@ -232,6 +235,17 @@
               <input name="weight_kg" type="number" step="0.1" required placeholder="77.4"></label>
           </div>
           <div class="form-actions"><button type="submit">Add weight</button></div>
+        </form>
+
+        <form id="form-activity">
+          <div class="form-section">
+            <h2>Log activity</h2>
+            <label>What you did <input name="activity_type" required placeholder="walking"></label>
+            <label>Minutes <input name="duration_min" type="number" required placeholder="40"></label>
+            <label>Estimated kcal burned
+              <input name="estimated_kcal_burned" type="number" required placeholder="180"></label>
+          </div>
+          <div class="form-actions"><button type="submit">Add activity</button></div>
         </form>
       </div>
 

@@ -333,6 +333,7 @@ $("#form-user").addEventListener("submit", async (event) => {
     const user = await api("POST", "/users", body);
     const outcome = await api("POST", `/users/${user.user_id}/plan`);
     rememberUser(user);
+    fillPicker();
     $("#onboard-result").innerHTML =
       `<div class="note">Profile created — you are user ${user.user_id}.</div>` +
       (outcome.plan ? planCard(outcome.plan) : refusalCard(outcome.supervisor_decision));
@@ -524,58 +525,76 @@ function dailyIntake(logs) {
     const day = entry.timestamp.slice(0, 10);
     byDay.set(day, (byDay.get(day) || 0) + (entry.details.estimated_kcal || 0));
   }
-  return [...byDay.entries()].sort().map(([day, kcal]) => ({ day, kcal }));
+  return [...byDay.entries()].sort().map(([day, value]) => ({ day, value }));
 }
 
-function intakeChart(days, target) {
+/* One chart for both series: a line against a baseline. opts carries what differs —
+   the heading, the unit, the label on the baseline, and the sentence above it. */
+function lineChart(days, target, opts) {
   if (days.length < 2) return "";
 
   const W = 640, H = 200, L = 46, R = 14, T = 16, B = 26;
-  const top = Math.max(target, ...days.map((d) => d.kcal)) * 1.12;
+
+  /* Energy per day is read against zero, so the axis starts there. Body weight is not:
+     a scale from zero flattens the whole series into one line, because the number never
+     goes near zero and the movement that matters is a kilo or two. */
+  const values = [...days.map((d) => d.value), target];
+  const seen = { lo: Math.min(...values), hi: Math.max(...values) };
+  const pad = (seen.hi - seen.lo) * 0.3 || seen.hi * 0.05;
+  const hi = opts.fromZero ? seen.hi * 1.12 : seen.hi + pad;
+  const lo = opts.fromZero ? 0 : Math.max(0, seen.lo - pad);
+
   const x = (i) => L + (i * (W - L - R)) / (days.length - 1);
-  const y = (v) => T + (1 - v / top) * (H - T - B);
+  const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const tick = (v) => (hi < 300 ? v.toFixed(1) : Math.round(v));
 
-  const line = days.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.kcal).toFixed(1)}`)
+  const line = days.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.value).toFixed(1)}`)
     .join(" ");
-  const area = `${line} L${x(days.length - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`;
+  const area = `${line} L${x(days.length - 1).toFixed(1)} ${y(lo)} L${x(0).toFixed(1)} ${y(lo)} Z`;
   const last = days[days.length - 1];
-  const over = days.filter((d) => d.kcal > target).length;
+  const over = days.filter((d) => d.value > target).length;
 
-  const ticks = [0, Math.round(top / 2), Math.round(top)]
+  const ticks = [lo, (lo + hi) / 2, hi]
     .map((v) => `<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W - R}" y2="${y(v).toFixed(1)}"
                    stroke="var(--line)" stroke-width="1"/>
                  <text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end"
-                   font-size="10" fill="var(--muted)">${v}</text>`).join("");
+                   font-size="10" fill="var(--muted)">${tick(v)}</text>`).join("");
 
   const dots = days.map((d, i) =>
-    `<circle cx="${x(i).toFixed(1)}" cy="${y(d.kcal).toFixed(1)}" r="7" fill="transparent">
-       <title>${esc(d.day)} — ${d.kcal} kcal</title></circle>`).join("");
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(d.value).toFixed(1)}" r="7" fill="transparent">
+       <title>${esc(d.day)} — ${d.value} ${esc(opts.unit)}</title></circle>`).join("");
 
   return `
     <div class="card">
-      ${head("\u2197", "What you have been eating")}
-      <p class="hint">${over} of ${days.length} days above the target of ${target} kcal.</p>
+      ${head(opts.mark, opts.title)}
+      <p class="hint">${esc(opts.caption(over, days.length, target))}</p>
       <svg class="chart" viewBox="0 0 ${W} ${H}" role="img"
-           aria-label="Daily energy intake over ${days.length} days against a target of
-                       ${target} kcal; ${over} days were above it.">
+           aria-label="${esc(opts.caption(over, days.length, target))}">
+
         ${ticks}
         <path d="${area}" fill="var(--meter-fill)" opacity="0.10"/>
         <line x1="${L}" y1="${y(target).toFixed(1)}" x2="${W - R}" y2="${y(target).toFixed(1)}"
               stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="4 3"/>
         <text x="${W - R}" y="${(y(target) - 7).toFixed(1)}" text-anchor="end"
-              font-size="10" fill="var(--ink-2)">target ${target}</text>
+              font-size="10" fill="var(--ink-2)">${esc(opts.baselineLabel)}</text>
         <path d="${line}" fill="none" stroke="var(--meter-fill)" stroke-width="2"
               stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${x(days.length - 1).toFixed(1)}" cy="${y(last.kcal).toFixed(1)}" r="4"
+        <circle cx="${x(days.length - 1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="4"
                 fill="var(--meter-fill)" stroke="var(--surface)" stroke-width="2"/>
-        <text x="${(x(days.length - 1) - 8).toFixed(1)}" y="${(y(last.kcal) - 10).toFixed(1)}"
-              text-anchor="end" font-size="11" fill="var(--ink)">${last.kcal}</text>
+        <text x="${(x(days.length - 1) - 8).toFixed(1)}" y="${(y(last.value) - 10).toFixed(1)}"
+              text-anchor="end" font-size="11" fill="var(--ink)">${last.value}</text>
         ${dots}
         <text x="${L}" y="${H - 8}" font-size="10" fill="var(--muted)">${esc(days[0].day)}</text>
         <text x="${W - R}" y="${H - 8}" font-size="10" fill="var(--muted)"
               text-anchor="end">${esc(last.day)}</text>
       </svg>
     </div>`;
+}
+
+function weightSeries(logs) {
+  return logs.filter((e) => e.type === "weight")
+    .map((e) => ({ day: e.timestamp.slice(0, 10), value: e.details.weight_kg }))
+    .sort((a, b) => a.day.localeCompare(b.day));
 }
 
 function entriesCard(logs) {
@@ -602,6 +621,7 @@ function entriesCard(logs) {
 async function loadHome() {
   const id = currentUser();
   if (!id) return;
+  showProfile(id);
   let plan = null;
   try {
     plan = await api("GET", `/users/${id}/plan`);
@@ -611,7 +631,24 @@ async function loadHome() {
   }
   try {
     const logs = await api("GET", `/users/${id}/logs`);
-    $("#intake-view").innerHTML = plan ? intakeChart(dailyIntake(logs), plan.calorie_target) : "";
+
+    $("#intake-view").innerHTML = plan ? lineChart(dailyIntake(logs), plan.calorie_target, {
+      mark: "↗", title: "What you have been eating", unit: "kcal", fromZero: true,
+      baselineLabel: `target ${plan.calorie_target}`,
+      caption: (over, total, target) =>
+        `${over} of ${total} days above the target of ${target} kcal.`,
+    }) : "";
+
+    const weights = weightSeries(logs);
+    $("#weight-view").innerHTML = plan && plan.target_weight_kg ? lineChart(
+      weights, plan.target_weight_kg, {
+        mark: "⚖", title: "Your weight", unit: "kg",
+        baselineLabel: `target ${plan.target_weight_kg} kg`,
+        caption: (over, total, target) => over
+          ? `${total} weigh-ins, still ${(weights[weights.length - 1].value - target).toFixed(1)} kg above the target of ${target} kg.`
+          : `${total} weigh-ins, at or below the target of ${target} kg.`,
+      }) : "";
+
     $("#entries-view").innerHTML = entriesCard(logs);
   } catch (error) {
     $("#entries-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
@@ -621,3 +658,74 @@ async function loadHome() {
 /* arriving on the screen should show what is there, not an empty page and a button */
 document.querySelector('[data-panel="panel-plan"]').addEventListener("click", loadHome);
 if (readStoredUser()) loadHome();
+
+/* ───────────── the rest of what the API offers ───────────── */
+
+/* Choosing from the people on the system rather than remembering a number. With no
+   authentication there is nothing to scope this to, which is the same limitation the
+   dietitian screen states; it is a convenience over an endpoint that already lists
+   them, not a new liberty. */
+async function fillPicker() {
+  try {
+    const users = await api("GET", "/users");
+    const pick = $("#plan-pick");
+    pick.innerHTML = `<option value="">choose…</option>` + users
+      .filter((u) => u.role === "user")
+      .map((u) => `<option value="${u.user_id}">${esc(u.name)} · ${u.user_id}</option>`)
+      .join("");
+  } catch (error) {
+    /* the picker is a shortcut; typing an id still works */
+  }
+}
+
+$("#plan-pick").addEventListener("change", (event) => {
+  if (!event.target.value) return;
+  $("#plan-user").value = event.target.value;
+  loadHome();
+});
+
+/* The screen should say whose plan it is, not only which number it belongs to. */
+async function showProfile(id) {
+  try {
+    const user = await api("GET", `/users/${id}`);
+    whoami.textContent = `${user.name} · ${user.goal_type.replace("_", " ")}`;
+    whoami.hidden = false;
+  } catch (error) {
+    whoami.hidden = true;
+  }
+}
+
+$("#form-activity").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const f = new FormData(event.target);
+  try {
+    await api("POST", `/users/${currentUser()}/logs/activity`, {
+      timestamp: now(),
+      activity_type: f.get("activity_type"),
+      duration_min: Number(f.get("duration_min")),
+      estimated_kcal_burned: Number(f.get("estimated_kcal_burned")),
+    });
+    note("#log-result", `Logged ${f.get("duration_min")} min of ${f.get("activity_type")}.`, false);
+    loadHome();
+  } catch (error) {
+    note("#log-result", error.message, true);
+  }
+});
+
+/* Whether the server is answering at all, which is the difference between an empty
+   screen and a broken one. */
+async function checkHealth() {
+  const el = $("#status");
+  try {
+    const body = await api("GET", "/health");
+    el.className = "status ok";
+    el.lastElementChild.textContent = body.status === "ok" ? "Connected" : body.status;
+  } catch (error) {
+    el.className = "status down";
+    el.lastElementChild.textContent = "Server not responding";
+  }
+}
+
+checkHealth();
+setInterval(checkHealth, 30000);
+fillPicker();
