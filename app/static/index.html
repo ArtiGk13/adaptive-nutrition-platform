@@ -246,6 +246,10 @@
         <p>This screen is for the dietitian, not the person following a plan. It lists
            everyone on the system, how closely each is keeping to their plan, and the
            reasoning behind every plan that was issued or refused.</p>
+        <p class="caveat">Anyone can make the account below, because the system has no
+           authentication: the role is asserted, not proven. A deployment would issue
+           this account to a verified professional. Demonstrating the separation of the
+           two roles is as far as this goes, and the dissertation says so.</p>
       </div>
 
       <div class="toolbar">
@@ -253,7 +257,7 @@
         <button id="btn-all">Everyone</button>
         <button id="btn-flagged" class="primary">Only those needing a professional</button>
         <span class="spacer"></span>
-        <button id="btn-make-pro">Create a dietitian account</button>
+        <button id="btn-make-pro">Create a demo dietitian account</button>
       </div>
 
       <div id="pro-view" class="result"></div>

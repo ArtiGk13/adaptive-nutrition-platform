@@ -201,6 +201,18 @@ body {
 
 .nav-item.active svg { opacity: 1; }
 
+.caveat {
+  position: relative;
+  max-width: 62ch;
+  margin: 14px auto 0 !important;
+  padding: 11px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted) !important;
+  font-size: 0.83rem !important;
+  text-align: left;
+}
+
 .tech { margin-top: 14px; }
 
 .tech summary {
