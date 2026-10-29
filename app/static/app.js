@@ -31,6 +31,41 @@ function note(target, message, isError) {
   $(target).textContent = message;
 }
 
+/* ─────────────────────────────── theme ──────────────────────────────── */
+
+/* Without a choice the page follows whatever the browser asks for, which differs
+   between one machine and the next. A demonstration needs to be able to settle it. */
+
+const themeButton = $("#theme-toggle");
+
+function effectiveTheme() {
+  const stamped = document.documentElement.getAttribute("data-theme");
+  if (stamped === "light" || stamped === "dark") return stamped;
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function showThemeState() {
+  const next = effectiveTheme() === "dark" ? "light" : "dark";
+  themeButton.dataset.next = next;
+  themeButton.setAttribute("aria-pressed", String(effectiveTheme() === "dark"));
+  themeButton.querySelector(".theme-label").textContent =
+    next === "dark" ? "Dark theme" : "Light theme";
+}
+
+themeButton.addEventListener("click", () => {
+  const next = themeButton.dataset.next;
+  document.documentElement.setAttribute("data-theme", next);
+  try {
+    localStorage.setItem("theme", next);
+  } catch (error) {
+    /* storage unavailable: the choice holds for this page view only */
+  }
+  showThemeState();
+});
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", showThemeState);
+showThemeState();
+
 /* ──────────────────────────────── tabs ──────────────────────────────── */
 
 document.querySelectorAll(".nav-item").forEach((item) => {

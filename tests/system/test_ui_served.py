@@ -36,6 +36,23 @@ def test_the_stylesheet_defines_a_dark_mode(client):
     assert '[data-theme="dark"]' in css
 
 
+def test_the_theme_can_be_chosen_and_is_applied_before_paint(client):
+    page = client.get("/").text
+    assert 'id="theme-toggle"' in page
+    # the stored choice is read in the head, or the page flashes the other theme first
+    head = page.split("</head>")[0]
+    assert "localStorage" in head and "data-theme" in head
+
+
+def test_narrow_screens_keep_the_theme_control(client):
+    """The first version hid the whole sidebar footer below 880px, and the control
+    with it, which left a phone no way to change theme."""
+    css = client.get("/style.css").text
+    narrow = css.split("@media (max-width: 880px)")[1]
+    assert ".side-foot { display: none; }" not in narrow
+    assert ".theme-toggle" in narrow
+
+
 def test_the_mount_does_not_shadow_the_api(client):
     assert client.get("/health").json() == {"status": "ok"}
 

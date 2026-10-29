@@ -186,6 +186,30 @@ body {
 .nav-item.active svg { opacity: 1; }
 
 .side-foot { margin-top: auto; padding: 0 8px; }
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--raised);
+  font-size: 0.83rem;
+  color: var(--ink-2);
+}
+
+.theme-toggle:hover { border-color: var(--muted); color: var(--ink); }
+.theme-toggle svg { width: 16px; height: 16px; flex: none; }
+
+/* The button shows the theme it switches TO. Which that is depends on the theme now in
+   effect, which may come from storage or from the system, so the script decides it and
+   says so here rather than the cascade trying to work it out. */
+.theme-toggle svg { display: none; }
+.theme-toggle[data-next="dark"] .i-moon { display: block; }
+.theme-toggle[data-next="light"] .i-sun { display: block; }
 .side-foot p { margin: 0 0 10px; font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
 .side-foot a { font-size: 0.78rem; color: var(--ink-2); text-decoration: none; }
 .side-foot a:hover { color: var(--ink); }
@@ -503,7 +527,13 @@ tbody tr:hover { background: var(--raised); }
 
   .sidebar nav { flex-direction: row; }
   .nav-item { white-space: nowrap; }
-  .side-foot { display: none; }
+
+  /* The explanatory text and the link go, but not the theme control: hiding the whole
+     footer here left narrow screens with no way to change theme at all. */
+  .side-foot { margin: 0 0 0 auto; padding: 0; }
+  .side-foot p, .side-foot a { display: none; }
+  .theme-toggle { width: auto; margin: 0; }
+  .theme-toggle .theme-label { display: none; }
   main { padding: 24px 16px 60px; }
   .hero { font-size: 2.4rem; }
 }
