@@ -33,12 +33,13 @@ function note(target, message, isError) {
 
 /* ──────────────────────────────── tabs ──────────────────────────────── */
 
-document.querySelectorAll(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
     document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-    tab.classList.add("active");
-    $("#" + tab.dataset.panel).classList.add("active");
+    item.classList.add("active");
+    $("#" + item.dataset.panel).classList.add("active");
+    window.scrollTo({ top: 0 });
   });
 });
 
