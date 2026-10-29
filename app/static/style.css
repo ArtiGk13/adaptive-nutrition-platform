@@ -201,6 +201,16 @@ body {
 
 .nav-item.active svg { opacity: 1; }
 
+/* What the system stored, shown as a quotation of the record rather than as the
+   explanation — the plain sentences above it are the explanation. */
+.recorded {
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
 .whoami {
   margin: 0;
   padding: 9px 11px;

@@ -189,11 +189,43 @@ function planCard(plan) {
     </div>`;
 }
 
+/* The system records why it refused in its own terms, which is what the stored decision
+   needs to say. These translate the same thing for the person reading the screen, keyed
+   on the check that failed; the recorded wording is shown underneath, unaltered. */
+const WHY_REFUSED = {
+  declared_condition:
+    "You told us about a health condition. Planning around one is a professional's "
+    + "job, not a calculation's.",
+  eating_disorder_signal:
+    "One of your answers is something a professional should look at before any plan is "
+    + "made. This is not a diagnosis, and it does not mean anything is wrong — the "
+    + "system refers early on purpose, because that is the safer mistake for it to make.",
+  age_out_of_range:
+    "The figures this system works from were established for adults between 18 and 65. "
+    + "Outside that range they do not apply.",
+  underweight_weight_loss:
+    "Your weight is already below the healthy range for your height, so this system "
+    + "will not build a plan to lose more.",
+  target_weight_reached:
+    "You have reached the weight this system would have set as the target, so it will "
+    + "not plan for further loss.",
+  rapid_weight_loss:
+    "You have been losing weight faster than is considered safe to continue.",
+  min_calories:
+    "A plan for your goal would need a daily target below the safe minimum.",
+  max_deficit:
+    "Your goal would need a larger cut than is considered safe to sustain.",
+  macro_distribution:
+    "A plan could not be built that stays within the accepted nutrient ranges.",
+};
+
 function refusalCard(decision) {
+  const why = decision.failed_checks.map((c) => WHY_REFUSED[c]).filter(Boolean);
   return `
     <div class="card refuse">
       ${head("!", "A plan is not the right next step")}
-      <p>${esc(decision.notes)}</p>
+      ${why.map((line) => `<p>${esc(line)}</p>`).join("")}
+      <p class="recorded">${esc(decision.notes)}</p>
       <dl>
         <dt>Decision</dt>
         <dd><span class="chip bad">&#9888; ${esc(decision.decision_type)}</span></dd>
