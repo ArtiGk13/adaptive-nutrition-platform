@@ -94,3 +94,41 @@ def test_flagged_list_contains_referred_users(client, nutritionist_id):
 
     assert [row["user_id"] for row in flagged] == [referred]
     assert flagged[0]["needs_referral"] is True
+
+
+DIETITIAN = {
+    "name": "A Dietitian",
+    "age": 40,
+    "sex": "female",
+    "height_cm": 170.0,
+    "weight_kg": 65.0,
+    "activity_level": "moderate",
+    "goal_type": "maintenance",
+    "role": "nutritionist",
+}
+
+PLAN_HOLDER = {
+    "name": "A User",
+    "age": 30,
+    "sex": "female",
+    "height_cm": 165.0,
+    "weight_kg": 72.0,
+    "activity_level": "light",
+    "goal_type": "weight_loss",
+}
+
+
+def test_the_caseload_excludes_the_dietitians(client):
+    """An overview carries a target, an adherence level and a referral flag, and a
+    nutritionist account holds none of them. Listing them put rows of dashes beside the
+    people the dietitian is reading about."""
+    caller = client.post("/users", json=DIETITIAN).json()["user_id"]
+    colleague = client.post("/users", json=DIETITIAN).json()["user_id"]
+    planned_for = client.post("/users", json=PLAN_HOLDER).json()["user_id"]
+
+    listed = client.get("/nutritionist/users", headers={"X-User-Id": str(caller)}).json()
+    ids = [row["user_id"] for row in listed]
+
+    assert planned_for in ids
+    assert caller not in ids
+    assert colleague not in ids

@@ -6,7 +6,7 @@ from app.db import repository
 from app.domain.assessment import AssessmentResult
 from app.domain.decisions import DecisionType, SupervisorDecision
 from app.domain.nutrition_plan import NutritionPlan
-from app.domain.user_profile import UserProfile
+from app.domain.user_profile import Role, UserProfile
 
 
 @dataclass
@@ -46,7 +46,17 @@ def overview_for(session: Session, profile: UserProfile) -> UserOverview:
 
 
 def list_overviews(session: Session) -> list[UserOverview]:
-    return [overview_for(session, profile) for profile in repository.list_users(session)]
+    """Those being planned for, which excludes the dietitians themselves.
+
+    An overview carries a calorie target, an adherence level and a referral flag. A
+    nutritionist account holds none of those, so it arrived in the caseload as a row of
+    dashes and zeroes beside the people the dietitian is actually reading about.
+    """
+    return [
+        overview_for(session, profile)
+        for profile in repository.list_users(session)
+        if profile.role != Role.NUTRITIONIST
+    ]
 
 
 def list_flagged(session: Session) -> list[UserOverview]:
