@@ -358,7 +358,8 @@ $("#form-meal").addEventListener("submit", async (event) => {
       food_description: f.get("food_description"),
       estimated_kcal: Number(f.get("estimated_kcal")),
     });
-    note("#log-result", `Logged ${f.get("meal_slot")}: ${f.get("food_description")}.`, false);
+    note("#log-result", `Logged. Nothing changes in your plan until you press `
+      + `"Update my plan" — that is when it is reviewed against what you logged.`, false);
     loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
@@ -373,7 +374,8 @@ $("#form-weight").addEventListener("submit", async (event) => {
       timestamp: now(),
       weight_kg: Number(f.get("weight_kg")),
     });
-    note("#log-result", `Logged ${f.get("weight_kg")} kg.`, false);
+    note("#log-result", `Weight recorded. Press "Update my plan" when you want `
+      + `the plan reviewed against it.`, false);
     loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
@@ -531,7 +533,14 @@ function dailyIntake(logs) {
 /* One chart for both series: a line against a baseline. opts carries what differs —
    the heading, the unit, the label on the baseline, and the sentence above it. */
 function lineChart(days, target, opts) {
-  if (days.length < 2) return "";
+  if (days.length < 2) {
+    return `<div class="card">
+      ${head(opts.mark, opts.title)}
+      <p class="hint">${days.length === 1
+        ? "One entry so far. A second one on another day gives something to draw."
+        : "Nothing logged yet."}</p>
+    </div>`;
+  }
 
   const W = 640, H = 200, L = 46, R = 14, T = 16, B = 26;
 
@@ -705,7 +714,8 @@ $("#form-activity").addEventListener("submit", async (event) => {
       duration_min: Number(f.get("duration_min")),
       estimated_kcal_burned: Number(f.get("estimated_kcal_burned")),
     });
-    note("#log-result", `Logged ${f.get("duration_min")} min of ${f.get("activity_type")}.`, false);
+    note("#log-result", `Activity recorded. Press "Update my plan" when you want `
+      + `the plan reviewed against it.`, false);
     loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
