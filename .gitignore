@@ -26,3 +26,7 @@ desktop.ini
 # Reference material: published PDFs, kept locally and not redistributed
 docs/sources/
 PG Dissertation Handbook*.pdf
+
+# The dissertation document itself: delivered through the submission form,
+# and it carries a handwritten signature that should not be in a public repo
+docs/Dissertation*.docx
