@@ -1,43 +1,47 @@
-/* The three macronutrient hues are categorical slots from the project's data-visualisation
-   palette, validated for colour-vision deficiency against the surfaces defined below. The
-   meter is a single sequential hue with a lighter step of its own ramp as the track: the
-   system defines no thresholds for adherence, so banding it by colour would put a clinical
-   judgement on screen that nothing in the code makes. */
+/* The three macronutrient hues — rust, ochre and pine — were run through the palette
+   validator against each surface below rather than chosen by eye, which is what earthy
+   tones need: they are warm, close in hue and low in chroma, so the first several
+   candidates read as the same colour to a reader with ordinary vision, let alone to one
+   with a colour deficiency. The set that survives clears every gate in both modes.
+
+   The meter is a single sequential hue with a lighter step of its own ramp as the track:
+   the system defines no thresholds for adherence, so banding it by colour would put a
+   clinical judgement on screen that nothing in the code makes. */
 
 :root {
   color-scheme: light;
 
-  --page: #f4f6f8;
-  --surface: #ffffff;
-  --raised: #f7f9fa;
-  --sidebar: #ffffff;
+  --page: #f5f1ea;
+  --surface: #fffdfa;
+  --raised: #faf6ef;
+  --sidebar: #fffdfa;
 
-  --ink: #10151a;
-  --ink-2: #4a545e;
-  --muted: #7d8793;
+  --ink: #2b2420;
+  --ink-2: #6b5f55;
+  --muted: #9a8c7e;
 
-  --line: #e4e9ee;
-  --line-soft: #eef2f5;
-  --field: #ffffff;
+  --line: #e6ded1;
+  --line-soft: #f0e9df;
+  --field: #fffdfa;
 
-  --brand: #10151a;
-  --brand-ink: #ffffff;
+  --brand: #4a3b2f;
+  --brand-ink: #fffdfa;
 
-  --protein: #2a78d6;
-  --carbs:   #eb6834;
-  --fat:     #1baf7a;
+  --protein: #a84e2b;   /* rust */
+  --carbs:   #bf8a24;   /* ochre */
+  --fat:     #07876e;   /* pine */
 
-  --meter-fill: #2a78d6;
-  --meter-track: #cde2fb;
+  --meter-fill: #07876e;
+  --meter-track: #bfe0d8;
 
   --good: #0ca30c;
-  --good-wash: #ecf8ec;
+  --good-wash: #edf7ea;
   --critical: #d03b3b;
-  --critical-wash: #fdeeee;
+  --critical-wash: #fbeeea;
 
-  --ring: rgba(42, 120, 214, 0.16);
-  --shadow-sm: 0 1px 2px rgba(16, 21, 26, 0.05);
-  --shadow: 0 1px 2px rgba(16, 21, 26, 0.04), 0 12px 28px -18px rgba(16, 21, 26, 0.3);
+  --ring: rgba(7, 135, 110, 0.18);
+  --shadow-sm: 0 1px 2px rgba(43, 36, 32, 0.05);
+  --shadow: 0 1px 2px rgba(43, 36, 32, 0.04), 0 12px 28px -18px rgba(43, 36, 32, 0.32);
   --r: 12px;
 }
 
@@ -45,62 +49,65 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --page: #0e1114;
-    --surface: #15181b;
-    --raised: #1b1f24;
-    --sidebar: #121518;
+    --page: #14120f;
+    --surface: #1b1815;
+    --raised: #221e19;
+    --sidebar: #171410;
 
-    --ink: #e9edf1;
-    --ink-2: #a8b2bd;
-    --muted: #7d8793;
+    --ink: #ece6dd;
+    --ink-2: #b5a99a;
+    --muted: #8d8073;
 
-    --line: #262c33;
-    --line-soft: #1e232a;
-    --field: #1b1f24;
+    --line: #312b24;
+    --line-soft: #241f1a;
+    --field: #221e19;
 
-    --brand: #e9edf1;
-    --brand-ink: #0e1114;
+    --brand: #ece6dd;
+    --brand-ink: #14120f;
 
-    --protein: #3987e5;
-    --carbs:   #d95926;
-    --fat:     #199e70;
+    /* The rust has to sit redder here than in light mode. Stepped to the dark band at
+       its light-mode hue it lands 6.0 from the ochre under deuteranopia and 12.2 to
+       normal vision, under both floors; this step clears them at 9.2 and 16.4. */
+    --protein: #c25548;
+    --carbs:   #b09228;
+    --fat:     #189c8d;
 
-    --meter-fill: #3987e5;
-    --meter-track: #1d3450;
+    --meter-fill: #189c8d;
+    --meter-track: #113f39;
 
-    --good-wash: #13251a;
-    --critical-wash: #2b1618;
+    --good-wash: #16271a;
+    --critical-wash: #2c1a18;
 
-    --ring: rgba(57, 135, 229, 0.25);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
+    --ring: rgba(24, 156, 141, 0.28);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page: #0e1114;
-  --surface: #15181b;
-  --raised: #1b1f24;
-  --sidebar: #121518;
-  --ink: #e9edf1;
-  --ink-2: #a8b2bd;
-  --muted: #7d8793;
-  --line: #262c33;
-  --line-soft: #1e232a;
-  --field: #1b1f24;
-  --brand: #e9edf1;
-  --brand-ink: #0e1114;
-  --protein: #3987e5;
-  --carbs:   #d95926;
-  --fat:     #199e70;
-  --meter-fill: #3987e5;
-  --meter-track: #1d3450;
-  --good-wash: #13251a;
-  --critical-wash: #2b1618;
-  --ring: rgba(57, 135, 229, 0.25);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
+  --page: #14120f;
+  --surface: #1b1815;
+  --raised: #221e19;
+  --sidebar: #171410;
+  --ink: #ece6dd;
+  --ink-2: #b5a99a;
+  --muted: #8d8073;
+  --line: #312b24;
+  --line-soft: #241f1a;
+  --field: #221e19;
+  --brand: #ece6dd;
+  --brand-ink: #14120f;
+  --protein: #c25548;
+  --carbs:   #b09228;
+  --fat:     #189c8d;
+  --meter-fill: #189c8d;
+  --meter-track: #113f39;
+  --good-wash: #16271a;
+  --critical-wash: #2c1a18;
+  --ring: rgba(24, 156, 141, 0.28);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
 }
 
 * { box-sizing: border-box; }
