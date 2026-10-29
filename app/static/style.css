@@ -698,6 +698,7 @@ th {
 
 td { padding: 11px 10px; border-bottom: 1px solid var(--line-soft); }
 td.num { font-variant-numeric: tabular-nums; }
+td.recorded-cell { color: var(--muted); font-size: 0.82rem; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr { cursor: pointer; transition: background 0.12s; }
 tbody tr:hover { background: var(--raised); }

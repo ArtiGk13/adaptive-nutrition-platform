@@ -383,6 +383,16 @@ $("#btn-cycle").addEventListener("click", async () => {
 
 const asNutritionist = () => ({ "X-User-Id": String(Number($("#pro-user").value)) });
 
+/* The stored value names the branch the Supervisor took. These say the same thing in
+   the words a dietitian reading a caseload would use; the stored value is still shown
+   in the last column, because that is the record. */
+const DECISION_SAID = {
+  approve_plan: "Issued the first plan",
+  approve_adjustment: "Reviewed the plan",
+  hold: "Held the plan unchanged",
+  flag_referral: "Refused, and referred",
+};
+
 function overviewTable(rows) {
   if (!rows.length) return `<div class="note plain">No users to show.</div>`;
   const body = rows.map((r) => `
@@ -459,10 +469,11 @@ async function showHistory(userId) {
   try {
     const h = await api("GET", `/nutritionist/users/${userId}`, undefined, asNutritionist());
     const decisions = h.decisions.map((d) => `
-      <tr><td>${esc(d.decision_type)}</td>
+      <tr><td class="num">${esc(d.cycle_timestamp.slice(0, 10))}</td>
+          <td>${esc(DECISION_SAID[d.decision_type] || d.decision_type)}</td>
           <td><span class="chip ${d.approved ? "good" : "bad"}">
               ${d.approved ? "&#10003; approved" : "&#9888; refused"}</span></td>
-          <td>${esc(d.notes)}</td></tr>`).join("");
+          <td class="recorded-cell">${esc(d.notes)}</td></tr>`).join("");
     $("#pro-history").innerHTML = `
       <div class="card">
         ${head("&#9733;", esc(h.profile.name))}
@@ -472,7 +483,8 @@ async function showHistory(userId) {
           <dt>Decisions recorded</dt><dd>${h.decisions.length}</dd>
         </dl>
         <table>
-          <thead><tr><th>decision</th><th>outcome</th><th>note</th></tr></thead>
+          <thead><tr><th>when</th><th>what the system did</th><th>outcome</th>
+                     <th>recorded</th></tr></thead>
           <tbody>${decisions}</tbody>
         </table>
       </div>`;

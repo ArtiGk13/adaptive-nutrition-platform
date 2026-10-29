@@ -246,6 +246,11 @@ class DecisionRead(BaseModel):
     guardrail_checks_passed: bool
     failed_checks: list[str]
     notes: str
+    # Recorded on the decision and simply not returned before; without it a trail of
+    # decisions cannot be read in order. The version recorded beside it is not exposed:
+    # a decision is built before the plan is stored, so the number it holds is the one
+    # on the draft, not the one the stored plan ends up with.
+    cycle_timestamp: datetime
 
     @classmethod
     def from_domain(cls, decision: SupervisorDecision) -> "DecisionRead":
@@ -256,6 +261,7 @@ class DecisionRead(BaseModel):
             guardrail_checks_passed=decision.guardrail_checks_passed,
             failed_checks=decision.failed_checks,
             notes=decision.notes,
+            cycle_timestamp=decision.cycle_timestamp,
         )
 
 
