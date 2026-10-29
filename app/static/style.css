@@ -39,6 +39,7 @@
   --critical: #d03b3b;
   --critical-wash: #fbeeea;
 
+  --wash: rgba(7, 135, 110, 0.07);
   --ring: rgba(7, 135, 110, 0.18);
   --shadow-sm: 0 1px 2px rgba(43, 36, 32, 0.05);
   --shadow: 0 1px 2px rgba(43, 36, 32, 0.04), 0 12px 28px -18px rgba(43, 36, 32, 0.32);
@@ -78,6 +79,7 @@
     --good-wash: #16271a;
     --critical-wash: #2c1a18;
 
+    --wash: rgba(24, 156, 141, 0.07);
     --ring: rgba(24, 156, 141, 0.28);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
@@ -105,6 +107,7 @@
   --meter-track: #113f39;
   --good-wash: #16271a;
   --critical-wash: #2c1a18;
+  --wash: rgba(24, 156, 141, 0.07);
   --ring: rgba(24, 156, 141, 0.28);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
@@ -115,6 +118,10 @@
 body {
   margin: 0;
   background: var(--page);
+  background-image:
+    radial-gradient(900px 420px at 88% -8%, var(--wash), transparent 70%),
+    radial-gradient(700px 340px at -4% 102%, var(--wash), transparent 70%);
+  background-attachment: fixed;
   color: var(--ink);
   font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -214,11 +221,57 @@ body {
 .side-foot a { font-size: 0.78rem; color: var(--ink-2); text-decoration: none; }
 .side-foot a:hover { color: var(--ink); }
 
-main { padding: 34px 38px 72px; max-width: 980px; }
+main { padding: 38px 44px 80px; max-width: 1240px; }
 
-.page-head { margin-bottom: 24px; }
-.page-head h1 { margin: 0; font-size: 1.5rem; font-weight: 640; letter-spacing: -0.022em; }
-.page-head p { margin: 7px 0 0; max-width: 64ch; color: var(--ink-2); font-size: 0.92rem; }
+.page-head { margin-bottom: 26px; }
+.page-head h1 { margin: 0; font-size: 1.9rem; font-weight: 650; letter-spacing: -0.028em; }
+.page-head p { margin: 9px 0 0; max-width: 62ch; color: var(--ink-2); font-size: 0.95rem; }
+
+/* The form alone left most of a wide screen empty. The column beside it carries the
+   mechanism the whole system is organised around, which is worth the space. */
+.split { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.split > form { margin: 0; }
+
+.aside { position: sticky; top: 24px; display: grid; gap: 16px; }
+
+.figure {
+  margin: 0;
+  padding: 20px 20px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+}
+
+.figure svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto; color: var(--ink-2); }
+
+.figure figcaption {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 0.79rem;
+  line-height: 1.5;
+}
+
+.assurances { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+
+.assurances li {
+  padding: 13px 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink-2);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.assurances b { display: block; margin-bottom: 2px; color: var(--ink); font-size: 0.86rem; font-weight: 600; }
+
+@media (max-width: 1080px) {
+  .split { grid-template-columns: 1fr; }
+  .aside { position: static; }
+}
 
 .panel { display: none; animation: rise 0.2s ease both; }
 .panel.active { display: block; }

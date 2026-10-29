@@ -44,6 +44,15 @@ def test_the_theme_can_be_chosen_and_is_applied_before_paint(client):
     assert "localStorage" in head and "data-theme" in head
 
 
+def test_the_cycle_figure_is_described_for_readers_who_cannot_see_it(client):
+    page = client.get("/")
+    assert 'role="img"' in page.text
+    assert 'aria-label="The adaptation cycle' in page.text
+    assert "<figcaption>" in page.text
+    # drawn, not fetched: an external image would not survive an offline demonstration
+    assert "<svg" in page.text and "<img" not in page.text
+
+
 def test_narrow_screens_keep_the_theme_control(client):
     """The first version hid the whole sidebar footer below 880px, and the control
     with it, which left a phone no way to change theme."""
