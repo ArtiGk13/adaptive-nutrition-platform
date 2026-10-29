@@ -522,8 +522,7 @@ function dailyIntake(logs) {
 function lineChart(days, target, opts) {
   if (days.length < 2) {
     return days.length === 1
-      ? `<div class="note plain">${esc(opts.title)}: one entry so far. Another on a
-          different day gives something to chart.</div>`
+      ? `<div class="note plain">${esc(opts.needMore)}</div>`
       : "";
   }
 
@@ -628,6 +627,8 @@ async function loadHome() {
 
     $("#intake-view").innerHTML = plan ? lineChart(dailyIntake(logs), plan.calorie_target, {
       mark: "↗", title: "What you have been eating", unit: "kcal", fromZero: true,
+      needMore: "One day logged so far. Meals on the same day are added together, so "
+        + "log something on another day and the trend appears here.",
       baselineLabel: `target ${plan.calorie_target}`,
       caption: (over, total, target) =>
         `${over} of ${total} days above the target of ${target} kcal.`,
@@ -637,6 +638,7 @@ async function loadHome() {
     $("#weight-view").innerHTML = plan && plan.target_weight_kg ? lineChart(
       weights, plan.target_weight_kg, {
         mark: "⚖", title: "Your weight", unit: "kg",
+        needMore: "One weigh-in so far. Add another and the trend appears here.",
         baselineLabel: `target ${plan.target_weight_kg} kg`,
         caption: (over, total, target) => over
           ? `${total} weigh-ins, still ${(weights[weights.length - 1].value - target).toFixed(1)} kg above the target of ${target} kg.`
