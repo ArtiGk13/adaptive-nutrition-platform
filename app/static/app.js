@@ -419,8 +419,28 @@ function overviewTable(rows) {
     <p class="hint">Select a row to see everything that happened for that person.</p></div>`;
 }
 
+/* The API answers with the rule it enforced. Here that reads as a rebuff to someone
+   who has simply arrived on the wrong screen, so it is said in full and with the way
+   out. */
+function proProblem(message) {
+  if (/nutritionist role/i.test(message)) {
+    return "That id belongs to someone following a plan, not to a dietitian. This "
+      + "screen is only for the dietitian account — there is one button along from "
+      + "here that will create one.";
+  }
+  if (/Unknown user/i.test(message)) {
+    return "No account has that id yet.";
+  }
+  return message;
+}
+
 async function loadOverviews(path) {
   $("#pro-history").innerHTML = "";
+  if (!$("#pro-user").value) {
+    $("#pro-view").innerHTML =
+      `<div class="note plain">Enter the dietitian's id, or create one.</div>`;
+    return;
+  }
   try {
     const rows = await api("GET", path, undefined, asNutritionist());
     $("#pro-view").innerHTML = overviewTable(rows);
@@ -428,9 +448,27 @@ async function loadOverviews(path) {
       tr.addEventListener("click", () => showHistory(tr.dataset.user));
     });
   } catch (error) {
-    $("#pro-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
+    $("#pro-view").innerHTML =
+      `<div class="note error">${esc(proProblem(error.message))}</div>`;
   }
 }
+
+/* Nothing here is authentication: the system has none and says so. This only creates a
+   user carrying the second role the proposal described, so the screen can be reached. */
+$("#btn-make-pro").addEventListener("click", async () => {
+  try {
+    const pro = await api("POST", "/users", {
+      name: "Dietitian", age: 40, sex: "female", height_cm: 170, weight_kg: 65,
+      activity_level: "moderate", goal_type: "maintenance", role: "nutritionist",
+    });
+    $("#pro-user").value = pro.user_id;
+    $("#pro-view").innerHTML =
+      `<div class="note">Dietitian account created — id ${pro.user_id}. `
+      + `Now choose one of the two lists.</div>`;
+  } catch (error) {
+    $("#pro-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
+  }
+});
 
 async function showHistory(userId) {
   try {

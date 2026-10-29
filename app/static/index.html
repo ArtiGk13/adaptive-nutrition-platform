@@ -243,14 +243,17 @@
       <div class="page-head">
         <svg class="banner-art" aria-hidden="true"><use href="#banner-art"/></svg>
         <h1>Dietitian view</h1>
-        <p>Everyone you are following, how closely they are keeping to their plan, and the
+        <p>This screen is for the dietitian, not the person following a plan. It lists
+           everyone on the system, how closely each is keeping to their plan, and the
            reasoning behind every plan that was issued or refused.</p>
       </div>
 
       <div class="toolbar">
-        <label>Your user id <input id="pro-user" type="number" min="1" placeholder="3"></label>
-        <button id="btn-all">All users</button>
-        <button id="btn-flagged" class="primary">Needing referral</button>
+        <label>Dietitian id <input id="pro-user" type="number" min="1" placeholder="3"></label>
+        <button id="btn-all">Everyone</button>
+        <button id="btn-flagged" class="primary">Only those needing a professional</button>
+        <span class="spacer"></span>
+        <button id="btn-make-pro">Create a dietitian account</button>
       </div>
 
       <div id="pro-view" class="result"></div>
