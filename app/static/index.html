@@ -84,6 +84,8 @@
       </button>
     </nav>
 
+    <p id="whoami" class="whoami" hidden></p>
+
     <div class="side-foot">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
         <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -118,8 +120,8 @@
         <div class="form-section">
           <h2>About you</h2>
           <div class="grid">
-            <label>Name <input name="name" required value="Maria Georgiou"></label>
-            <label>Age <input name="age" type="number" min="1" max="120" required value="35"></label>
+            <label>Name <input name="name" required placeholder="Your name"></label>
+            <label>Age <input name="age" type="number" min="1" max="120" required placeholder="35"></label>
             <label>Sex
               <select name="sex">
                 <option value="female">female</option>
@@ -127,9 +129,9 @@
               </select>
             </label>
             <label>Height (cm)
-              <input name="height_cm" type="number" step="0.5" required value="165"></label>
+              <input name="height_cm" type="number" step="0.5" required placeholder="165"></label>
             <label>Weight (kg)
-              <input name="weight_kg" type="number" step="0.1" required value="78"></label>
+              <input name="weight_kg" type="number" step="0.1" required placeholder="78"></label>
             <label>Activity level
               <select name="activity_level">
                 <option value="sedentary">sedentary</option>
@@ -176,6 +178,7 @@
 
         <div class="form-actions">
           <button type="submit" class="primary">Create profile and request a plan</button>
+          <button type="button" id="fill-example">Fill in an example</button>
         </div>
       </form>
 
@@ -193,7 +196,7 @@
       </div>
 
       <div class="toolbar">
-        <label>User id <input id="plan-user" type="number" min="1" value="1"></label>
+        <label>User id <input id="plan-user" type="number" min="1" placeholder="1"></label>
         <button id="btn-load">Load plan</button>
         <span class="spacer"></span>
         <button id="btn-cycle" class="primary">Update my plan</button>
@@ -214,9 +217,9 @@
               </select>
             </label>
             <label>What you ate <input name="food_description" required
-                   value="pasta with chicken"></label>
+                   placeholder="pasta with chicken"></label>
             <label>Estimated kcal
-              <input name="estimated_kcal" type="number" required value="900"></label>
+              <input name="estimated_kcal" type="number" required placeholder="900"></label>
           </div>
           <div class="form-actions"><button type="submit">Add meal</button></div>
         </form>
@@ -225,7 +228,7 @@
           <div class="form-section">
             <h2>Log your weight</h2>
             <label>Weight (kg)
-              <input name="weight_kg" type="number" step="0.1" required value="77.4"></label>
+              <input name="weight_kg" type="number" step="0.1" required placeholder="77.4"></label>
           </div>
           <div class="form-actions"><button type="submit">Add weight</button></div>
         </form>
@@ -245,7 +248,7 @@
       </div>
 
       <div class="toolbar">
-        <label>Your user id <input id="pro-user" type="number" min="1" value="3"></label>
+        <label>Your user id <input id="pro-user" type="number" min="1" placeholder="3"></label>
         <button id="btn-all">All users</button>
         <button id="btn-flagged" class="primary">Needing referral</button>
       </div>

@@ -201,6 +201,18 @@ body {
 
 .nav-item.active svg { opacity: 1; }
 
+.whoami {
+  margin: 0;
+  padding: 9px 11px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+}
+
+.whoami[hidden] { display: none; }
+
 .side-foot { margin-top: auto; padding: 0 8px; }
 
 .theme-toggle {

@@ -31,6 +31,42 @@ function note(target, message, isError) {
   $(target).textContent = message;
 }
 
+/* ────────────────────────── who you are ─────────────────────────────── */
+
+/* There is no sign-in: the system identifies a caller by a plain id, and inventing an
+   email and a passcode here would look like an account while protecting nothing. What
+   the browser can honestly do is remember the id you were given, so you do not have to
+   write it down and type it back. */
+
+const whoami = $("#whoami");
+
+function readStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
+function showStoredUser() {
+  const user = readStoredUser();
+  if (!user) return;
+  $("#plan-user").value = user.id;
+  whoami.textContent = `${user.name} · user ${user.id}`;
+  whoami.hidden = false;
+}
+
+function rememberUser(user) {
+  try {
+    localStorage.setItem("user", JSON.stringify({ id: user.user_id, name: user.name }));
+  } catch (error) {
+    /* storage unavailable: the id is still shown in the message on screen */
+  }
+  showStoredUser();
+}
+
+showStoredUser();
+
 /* ───────────────────────── back to the top ──────────────────────────── */
 
 const toTop = $("#to-top");
@@ -255,7 +291,7 @@ $("#form-user").addEventListener("submit", async (event) => {
   try {
     const user = await api("POST", "/users", body);
     const outcome = await api("POST", `/users/${user.user_id}/plan`);
-    $("#plan-user").value = user.user_id;
+    rememberUser(user);
     $("#onboard-result").innerHTML =
       `<div class="note">Profile created — you are user ${user.user_id}.</div>` +
       (outcome.plan ? planCard(outcome.plan) : refusalCard(outcome.supervisor_decision));
@@ -383,3 +419,19 @@ async function showHistory(userId) {
 
 $("#btn-all").addEventListener("click", () => loadOverviews("/nutritionist/users"));
 $("#btn-flagged").addEventListener("click", () => loadOverviews("/nutritionist/flagged"));
+
+/* ───────────────────────── the example ──────────────────────────────── */
+
+const EXAMPLE = {
+  name: "Maria Georgiou", age: 35, sex: "female", height_cm: 165, weight_kg: 78,
+  activity_level: "light", goal_type: "weight_loss",
+};
+
+$("#fill-example").addEventListener("click", () => {
+  const form = $("#form-user");
+  for (const [field, value] of Object.entries(EXAMPLE)) {
+    const input = form.elements[field];
+    if (input) input.value = value;
+  }
+  form.elements.name.focus();
+});
