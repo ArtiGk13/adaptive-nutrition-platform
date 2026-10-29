@@ -221,56 +221,14 @@ body {
 .side-foot a { font-size: 0.78rem; color: var(--ink-2); text-decoration: none; }
 .side-foot a:hover { color: var(--ink); }
 
-main { padding: 38px 44px 80px; max-width: 1240px; }
+/* Centred rather than left-aligned in the available width: the air then sits on
+   both sides and reads as margin, which is what it looked wrong without. */
+main { width: 100%; max-width: 860px; margin-inline: auto; padding: 44px 32px 90px; }
 
 .page-head { margin-bottom: 26px; }
 .page-head h1 { margin: 0; font-size: 1.9rem; font-weight: 650; letter-spacing: -0.028em; }
 .page-head p { margin: 9px 0 0; max-width: 62ch; color: var(--ink-2); font-size: 0.95rem; }
 
-/* The form alone left most of a wide screen empty. The column beside it carries the
-   mechanism the whole system is organised around, which is worth the space. */
-.split { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; align-items: start; }
-.split > form { margin: 0; }
-
-.aside { position: sticky; top: 24px; display: grid; gap: 16px; }
-
-.figure {
-  margin: 0;
-  padding: 20px 20px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow-sm);
-}
-
-.figure svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto; color: var(--ink-2); }
-
-.figure figcaption {
-  margin-top: 14px;
-  padding-top: 13px;
-  border-top: 1px solid var(--line-soft);
-  color: var(--muted);
-  font-size: 0.79rem;
-  line-height: 1.5;
-}
-
-.assurances { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-
-.assurances li {
-  padding: 13px 15px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  color: var(--ink-2);
-  font-size: 0.83rem;
-  line-height: 1.5;
-}
-
-.assurances b { display: block; margin-bottom: 2px; color: var(--ink); font-size: 0.86rem; font-weight: 600; }
-
-@media (max-width: 1080px) {
-  .split { grid-template-columns: 1fr; }
-  .aside { position: static; }
 }
 
 .panel { display: none; animation: rise 0.2s ease both; }
