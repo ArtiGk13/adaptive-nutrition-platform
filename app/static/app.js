@@ -345,14 +345,7 @@ $("#form-user").addEventListener("submit", async (event) => {
 
 const currentUser = () => Number($("#plan-user").value);
 
-$("#btn-load").addEventListener("click", async () => {
-  try {
-    const plan = await api("GET", `/users/${currentUser()}/plan`);
-    $("#plan-view").innerHTML = planCard(plan);
-  } catch (error) {
-    $("#plan-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
-  }
-});
+$("#btn-load").addEventListener("click", () => loadHome());
 
 $("#form-meal").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -365,6 +358,7 @@ $("#form-meal").addEventListener("submit", async (event) => {
       estimated_kcal: Number(f.get("estimated_kcal")),
     });
     note("#log-result", `Logged ${f.get("meal_slot")}: ${f.get("food_description")}.`, false);
+    loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
   }
@@ -379,6 +373,7 @@ $("#form-weight").addEventListener("submit", async (event) => {
       weight_kg: Number(f.get("weight_kg")),
     });
     note("#log-result", `Logged ${f.get("weight_kg")} kg.`, false);
+    loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
   }
@@ -514,3 +509,115 @@ $("#fill-example").addEventListener("click", () => {
   }
   form.elements.name.focus();
 });
+
+/* ─────────────────── what you have actually been eating ─────────────── */
+
+/* A line against a baseline, which is the form for "how far above or below a target",
+   drawn from the logs the API already returns. One series, so no legend; the target is
+   the reference, not a second series. Only the last point is labelled — a value on
+   every point is noise — and each carries a title for the pointer. */
+
+function dailyIntake(logs) {
+  const byDay = new Map();
+  for (const entry of logs) {
+    if (entry.type !== "meal") continue;
+    const day = entry.timestamp.slice(0, 10);
+    byDay.set(day, (byDay.get(day) || 0) + (entry.details.estimated_kcal || 0));
+  }
+  return [...byDay.entries()].sort().map(([day, kcal]) => ({ day, kcal }));
+}
+
+function intakeChart(days, target) {
+  if (days.length < 2) return "";
+
+  const W = 640, H = 200, L = 46, R = 14, T = 16, B = 26;
+  const top = Math.max(target, ...days.map((d) => d.kcal)) * 1.12;
+  const x = (i) => L + (i * (W - L - R)) / (days.length - 1);
+  const y = (v) => T + (1 - v / top) * (H - T - B);
+
+  const line = days.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.kcal).toFixed(1)}`)
+    .join(" ");
+  const area = `${line} L${x(days.length - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`;
+  const last = days[days.length - 1];
+  const over = days.filter((d) => d.kcal > target).length;
+
+  const ticks = [0, Math.round(top / 2), Math.round(top)]
+    .map((v) => `<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W - R}" y2="${y(v).toFixed(1)}"
+                   stroke="var(--line)" stroke-width="1"/>
+                 <text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end"
+                   font-size="10" fill="var(--muted)">${v}</text>`).join("");
+
+  const dots = days.map((d, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(d.kcal).toFixed(1)}" r="7" fill="transparent">
+       <title>${esc(d.day)} — ${d.kcal} kcal</title></circle>`).join("");
+
+  return `
+    <div class="card">
+      ${head("\u2197", "What you have been eating")}
+      <p class="hint">${over} of ${days.length} days above the target of ${target} kcal.</p>
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img"
+           aria-label="Daily energy intake over ${days.length} days against a target of
+                       ${target} kcal; ${over} days were above it.">
+        ${ticks}
+        <path d="${area}" fill="var(--meter-fill)" opacity="0.10"/>
+        <line x1="${L}" y1="${y(target).toFixed(1)}" x2="${W - R}" y2="${y(target).toFixed(1)}"
+              stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="${W - R}" y="${(y(target) - 7).toFixed(1)}" text-anchor="end"
+              font-size="10" fill="var(--ink-2)">target ${target}</text>
+        <path d="${line}" fill="none" stroke="var(--meter-fill)" stroke-width="2"
+              stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${x(days.length - 1).toFixed(1)}" cy="${y(last.kcal).toFixed(1)}" r="4"
+                fill="var(--meter-fill)" stroke="var(--surface)" stroke-width="2"/>
+        <text x="${(x(days.length - 1) - 8).toFixed(1)}" y="${(y(last.kcal) - 10).toFixed(1)}"
+              text-anchor="end" font-size="11" fill="var(--ink)">${last.kcal}</text>
+        ${dots}
+        <text x="${L}" y="${H - 8}" font-size="10" fill="var(--muted)">${esc(days[0].day)}</text>
+        <text x="${W - R}" y="${H - 8}" font-size="10" fill="var(--muted)"
+              text-anchor="end">${esc(last.day)}</text>
+      </svg>
+    </div>`;
+}
+
+function entriesCard(logs) {
+  if (!logs.length) return "";
+  const rows = logs.slice(-8).reverse().map((e) => {
+    const what = e.type === "meal"
+      ? `${esc(e.details.meal_slot)} — ${esc(e.details.food_description)}`
+      : e.type === "weight" ? "weight" : esc(e.details.activity_type || e.type);
+    const value = e.type === "meal" ? `${e.details.estimated_kcal} kcal`
+      : e.type === "weight" ? `${e.details.weight_kg} kg`
+      : `${e.details.duration_min || ""} min`;
+    return `<div class="meal"><span class="when">${esc(e.timestamp.slice(0, 10))}</span>
+              ${what}<span>${value}</span></div>`;
+  }).join("");
+  return `
+    <div class="card">
+      ${head("\u2630", "What you logged")}
+      <div class="meals">${rows}</div>
+      <p class="hint">Showing the most recent ${Math.min(8, logs.length)} of
+         ${logs.length} entries.</p>
+    </div>`;
+}
+
+async function loadHome() {
+  const id = currentUser();
+  if (!id) return;
+  let plan = null;
+  try {
+    plan = await api("GET", `/users/${id}/plan`);
+    $("#plan-view").innerHTML = planCard(plan);
+  } catch (error) {
+    $("#plan-view").innerHTML = `<div class="note plain">${esc(error.message)}</div>`;
+  }
+  try {
+    const logs = await api("GET", `/users/${id}/logs`);
+    $("#intake-view").innerHTML = plan ? intakeChart(dailyIntake(logs), plan.calorie_target) : "";
+    $("#entries-view").innerHTML = entriesCard(logs);
+  } catch (error) {
+    $("#entries-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
+  }
+}
+
+/* arriving on the screen should show what is there, not an empty page and a button */
+document.querySelector('[data-panel="panel-plan"]').addEventListener("click", loadHome);
+if (readStoredUser()) loadHome();

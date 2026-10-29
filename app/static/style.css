@@ -201,6 +201,15 @@ body {
 
 .nav-item.active svg { opacity: 1; }
 
+.chart { display: block; width: 100%; height: auto; margin-top: 8px; }
+.chart circle[fill="transparent"] { cursor: default; }
+
+.meal .when {
+  flex: 0 0 82px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .caveat {
   position: relative;
   max-width: 62ch;
