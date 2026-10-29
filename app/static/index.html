@@ -97,8 +97,7 @@
         </svg>
         <span class="theme-label">Dark theme</span>
       </button>
-      <p>Clinical quantities are computed deterministically. The language model
-         contributes wording only.</p>
+      <p>Your numbers are calculated, never generated.</p>
       <a href="/docs">API documentation &rarr;</a>
     </div>
   </aside>
@@ -110,8 +109,9 @@
       <div class="page-head">
         <svg class="banner-art" aria-hidden="true"><use href="#banner-art"/></svg>
         <h1>Create a profile</h1>
-        <p>A plan is derived from the profile and then checked. Where the history shows
-           something the system must not plan around, it refuses and refers instead.</p>
+        <p>A few details, and you will have a daily target to work with. If something in
+           your history needs a professional, you will be told so rather than handed a
+           plan.</p>
       </div>
 
       <form id="form-user">
@@ -151,8 +151,8 @@
 
         <div class="form-section">
           <h2>Medical history</h2>
-          <p class="hint">The minimum a dietitian identified as required before a plan
-             may be issued.</p>
+          <p class="hint">Asked before anything is suggested. Some answers mean a plan is
+             not the right thing for you.</p>
           <div class="grid">
             <label>Existing conditions
               <input name="medical_conditions" placeholder="e.g. type 2 diabetes"></label>
@@ -164,8 +164,8 @@
 
         <div class="form-section">
           <h2>Screening</h2>
-          <p class="hint">These answers may only trigger a referral. They never influence
-             the numbers in a plan.</p>
+          <p class="hint">These only decide whether to point you towards a professional.
+             They never change the numbers in your plan.</p>
           <label class="check"><input type="checkbox" name="recent_weight_fluctuation">
             Recent large weight fluctuations</label>
           <label class="check"><input type="checkbox" name="difficult_relationship_with_food">
@@ -188,15 +188,15 @@
       <div class="page-head">
         <svg class="banner-art" aria-hidden="true"><use href="#banner-art"/></svg>
         <h1>My plan</h1>
-        <p>Log what you actually ate, then run a cycle. The plan is revised from the
-           record, not from what it originally asked for.</p>
+        <p>Log what you actually ate, not what you meant to. If the plan turns out to ask
+           more than you can keep up, it changes to something you can.</p>
       </div>
 
       <div class="toolbar">
         <label>User id <input id="plan-user" type="number" min="1" value="1"></label>
         <button id="btn-load">Load plan</button>
         <span class="spacer"></span>
-        <button id="btn-cycle" class="primary">Run adaptation cycle</button>
+        <button id="btn-cycle" class="primary">Update my plan</button>
       </div>
 
       <div id="plan-view" class="result"></div>
@@ -240,9 +240,8 @@
       <div class="page-head">
         <svg class="banner-art" aria-hidden="true"><use href="#banner-art"/></svg>
         <h1>Dietitian view</h1>
-        <p>Restricted to accounts holding the nutritionist role. The caller is identified
-           by a header; there is no authentication, and the dissertation states this as a
-           limitation.</p>
+        <p>Everyone you are following, how closely they are keeping to their plan, and the
+           reasoning behind every plan that was issued or refused.</p>
       </div>
 
       <div class="toolbar">

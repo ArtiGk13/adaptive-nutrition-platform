@@ -156,15 +156,15 @@ function planCard(plan) {
 function refusalCard(decision) {
   return `
     <div class="card refuse">
-      ${head("!", "No plan was issued")}
+      ${head("!", "A plan is not the right next step")}
       <p>${esc(decision.notes)}</p>
       <dl>
         <dt>Decision</dt>
         <dd><span class="chip bad">&#9888; ${esc(decision.decision_type)}</span></dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
       </dl>
-      <p class="hint">This is not a warning attached to a plan you could still follow.
-         The plan does not exist, and nothing was stored.</p>
+      <p class="hint">Nothing was saved and no plan was made. What you have told us
+         needs a person to look at it, not a calculation.</p>
     </div>`;
 }
 
@@ -174,15 +174,15 @@ function cycleCards(result) {
     ? `<ul class="plain">${a.deviations.slice(0, 5).map((d) => `<li>${esc(d)}</li>`).join("")}
        ${a.deviations.length > 5
          ? `<li>… and ${a.deviations.length - 5} more days</li>` : ""}</ul>`
-    : `<p class="hint">No sustained deviation was detected.</p>`;
+    : `<p class="hint">You stayed close to your plan throughout.</p>`;
 
   const decision = result.supervisor_decision;
   const feedback = result.feedback_text
     ? `<div class="generated">
          <span class="k">Generated wording</span>
          <p>${esc(result.feedback_text)}</p>
-         <p class="hint">Phrased by a local language model from the decision above.
-            It is explanatory only and no figure depends on it.</p>
+         <p class="hint">Written to explain the change above. It does not affect any of
+            your numbers.</p>
        </div>`
     : "";
 
@@ -190,7 +190,7 @@ function cycleCards(result) {
 
   return `
     <div class="card">
-      ${head("1", "What your logs show")}
+      ${head("1", "How the past weeks went")}
       <p class="hero">${pct}<span class="hero-unit">% adherence</span></p>
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
@@ -204,13 +204,13 @@ function cycleCards(result) {
       ${deviations}
     </div>
     <div class="card">
-      ${head("2", "What the system proposes")}
+      ${head("2", result.action.action_type === "continue" ? "Nothing needs to change" : "What changes")}
       <p><span class="chip">${esc(result.action.action_type)}</span></p>
       <p style="margin:12px 0 0">${esc(result.action.reason)}</p>
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
       ${head(decision.approved ? "3" : "!",
-             decision.approved ? "Approved by the Supervisor" : "Not approved")}
+             decision.approved ? "Safety check passed" : "Safety check stopped this")}
       <dl>
         <dt>Decision</dt>
         <dd><span class="chip ${decision.approved ? "good" : "bad"}">
@@ -220,7 +220,7 @@ function cycleCards(result) {
         <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}</dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
       </dl>
-      <p class="hint">${esc(decision.notes)}</p>
+      ${decision.approved ? "" : `<p class="hint">${esc(decision.notes)}</p>`}
     </div>
     ${planCard(result.plan)}
     ${feedback}`;
@@ -339,7 +339,7 @@ function overviewTable(rows) {
                  <th>adherence</th><th>status</th></tr></thead>
       <tbody>${body}</tbody>
     </table>
-    <p class="hint">Select a row to open that user's full decision trail.</p></div>`;
+    <p class="hint">Select a row to see everything that happened for that person.</p></div>`;
 }
 
 async function loadOverviews(path) {
@@ -369,7 +369,7 @@ async function showHistory(userId) {
         <dl>
           <dt>Plan versions</dt><dd>${h.plans.length}</dd>
           <dt>Assessments</dt><dd>${h.assessments.length}</dd>
-          <dt>Supervisor decisions</dt><dd>${h.decisions.length}</dd>
+          <dt>Decisions recorded</dt><dd>${h.decisions.length}</dd>
         </dl>
         <table>
           <thead><tr><th>decision</th><th>outcome</th><th>note</th></tr></thead>
