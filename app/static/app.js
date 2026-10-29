@@ -44,23 +44,62 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 /* ───────────────────────────── rendering ────────────────────────────── */
 
+const head = (mark, title) =>
+  `<div class="card-head"><span class="stage">${mark}</span><h3>${title}</h3></div>`;
+
+/* The macro split is a genuine part-to-whole: at 4, 4 and 9 kcal per gram the three
+   segments reconstruct the calorie target, so the percentages are the energy shares
+   the dietitian's accepted ranges are expressed in. */
+function macroSplit(macros) {
+  const energy = {
+    protein: macros.protein_g * 4,
+    carbs: macros.carbs_g * 4,
+    fat: macros.fat_g * 9,
+  };
+  const total = energy.protein + energy.carbs + energy.fat;
+  const parts = [
+    ["Protein", "protein", macros.protein_g, energy.protein],
+    ["Carbohydrate", "carbs", macros.carbs_g, energy.carbs],
+    ["Fat", "fat", macros.fat_g, energy.fat],
+  ];
+  const share = (kcal) => Math.round((kcal / total) * 100);
+
+  return `
+    <div class="stack" role="img"
+         aria-label="${parts.map(([n, , , k]) => `${n} ${share(k)}%`).join(", ")}">
+      ${parts.map(([, slot, , kcal]) =>
+        `<i style="flex:${kcal};background:var(--${slot})"></i>`).join("")}
+    </div>
+    <div class="keys">
+      ${parts.map(([name, slot, grams, kcal]) => `
+        <span class="key">
+          <b style="background:var(--${slot})"></b>
+          <span class="n">${name} ${share(kcal)}%</span>
+          <span class="g">${grams} g</span>
+        </span>`).join("")}
+    </div>`;
+}
+
 function planCard(plan) {
-  const macros = plan.macro_targets;
+  const m = plan.macro_targets;
   const meals = plan.meal_structure
-    .map((slot) => `<li>${esc(slot.slot_name)} — ${slot.target_kcal} kcal</li>`)
+    .map((slot) => `<div class="meal">${esc(slot.slot_name)}
+                      <span>${slot.target_kcal} kcal</span></div>`)
     .join("");
   return `
     <div class="card">
-      <h3><span class="step">plan</span> Version ${plan.version}</h3>
-      <p class="big">${plan.calorie_target} kcal <span class="arrow">/ day</span></p>
-      <dl>
-        <dt>Protein</dt><dd>${macros.protein_g} g</dd>
-        <dt>Carbohydrate</dt><dd>${macros.carbs_g} g</dd>
-        <dt>Fat</dt><dd>${macros.fat_g} g</dd>
+      ${head("4", `Plan &middot; version ${plan.version}`)}
+      <div class="tiles">
+        <div class="tile"><div class="k">Daily energy</div>
+             <div class="v">${plan.calorie_target} <small>kcal</small></div></div>
         ${plan.target_weight_kg
-          ? `<dt>Target weight</dt><dd>${plan.target_weight_kg} kg</dd>` : ""}
-      </dl>
-      <ul class="plain">${meals}</ul>
+          ? `<div class="tile"><div class="k">Target weight</div>
+               <div class="v">${plan.target_weight_kg} <small>kg</small></div></div>` : ""}
+        <div class="tile"><div class="k">Meals</div>
+             <div class="v">${plan.meal_structure.length}</div></div>
+      </div>
+      ${macroSplit(m)}
+      <div class="meals">${meals}</div>
       <p class="hint">${esc(plan.rationale)}</p>
     </div>`;
 }
@@ -68,10 +107,11 @@ function planCard(plan) {
 function refusalCard(decision) {
   return `
     <div class="card refuse">
-      <h3><span class="step">supervisor</span> No plan was issued</h3>
+      ${head("!", "No plan was issued")}
       <p>${esc(decision.notes)}</p>
       <dl>
-        <dt>Decision</dt><dd>${esc(decision.decision_type)}</dd>
+        <dt>Decision</dt>
+        <dd><span class="chip bad">&#9888; ${esc(decision.decision_type)}</span></dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
       </dl>
       <p class="hint">This is not a warning attached to a plan you could still follow.
@@ -90,32 +130,43 @@ function cycleCards(result) {
   const decision = result.supervisor_decision;
   const feedback = result.feedback_text
     ? `<div class="generated">
-         <span class="step">generated wording</span>
+         <span class="k">Generated wording</span>
          <p>${esc(result.feedback_text)}</p>
          <p class="hint">Phrased by a local language model from the decision above.
             It is explanatory only and no figure depends on it.</p>
        </div>`
     : "";
 
+  const pct = Math.round(a.adherence_score * 100);
+
   return `
     <div class="card">
-      <h3><span class="step">assessment</span> What your logs show</h3>
-      <p class="big">${(a.adherence_score * 100).toFixed(0)}%
-         <span class="arrow">adherence</span></p>
-      <dl><dt>Average intake</dt><dd>${a.average_daily_kcal} kcal/day</dd>
-          <dt>Flag</dt><dd>${esc(a.proposed_flag)}</dd></dl>
+      ${head("1", "What your logs show")}
+      <p class="hero">${pct}<span class="hero-unit">% adherence</span></p>
+      <div class="meter"><span style="width:${pct}%"></span></div>
+      <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
+      <div class="tiles" style="margin-top:18px">
+        <div class="tile"><div class="k">Average intake</div>
+             <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
+        <div class="tile"><div class="k">Assessment flag</div>
+             <div class="v" style="font-size:1rem;padding-top:7px">
+               <span class="chip">${esc(a.proposed_flag)}</span></div></div>
+      </div>
       ${deviations}
     </div>
     <div class="card">
-      <h3><span class="step">adaptation</span> What it proposes</h3>
-      <p><strong>${esc(result.action.action_type)}</strong></p>
-      <p>${esc(result.action.reason)}</p>
+      ${head("2", "What the system proposes")}
+      <p><span class="chip">${esc(result.action.action_type)}</span></p>
+      <p style="margin:12px 0 0">${esc(result.action.reason)}</p>
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
-      <h3><span class="step">supervisor</span>
-          ${decision.approved ? "Approved" : "Not approved"}</h3>
+      ${head(decision.approved ? "3" : "!",
+             decision.approved ? "Approved by the Supervisor" : "Not approved")}
       <dl>
-        <dt>Decision</dt><dd>${esc(decision.decision_type)}</dd>
+        <dt>Decision</dt>
+        <dd><span class="chip ${decision.approved ? "good" : "bad"}">
+            ${decision.approved ? "&#10003;" : "&#9888;"}
+            ${esc(decision.decision_type)}</span></dd>
         <dt>Guardrails</dt>
         <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}</dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
@@ -222,24 +273,24 @@ $("#btn-cycle").addEventListener("click", async () => {
 const asNutritionist = () => ({ "X-User-Id": String(Number($("#pro-user").value)) });
 
 function overviewTable(rows) {
-  if (!rows.length) return `<div class="note">No users to show.</div>`;
+  if (!rows.length) return `<div class="note plain">No users to show.</div>`;
   const body = rows.map((r) => `
     <tr data-user="${r.user_id}">
-      <td>${r.user_id}</td>
+      <td class="num">${r.user_id}</td>
       <td>${esc(r.name)}</td>
       <td>${esc(r.goal_type)}</td>
-      <td>${r.calorie_target === null ? "—" : r.calorie_target + " kcal"}</td>
-      <td>${(r.adherence_level * 100).toFixed(0)}%</td>
+      <td class="num">${r.calorie_target === null ? "—" : r.calorie_target + " kcal"}</td>
+      <td class="num">${(r.adherence_level * 100).toFixed(0)}%</td>
       <td>${r.needs_referral
-            ? `<span class="flag referral">needs referral</span>`
-            : `<span class="flag">${esc(r.latest_flag || "ok")}</span>`}</td>
+            ? `<span class="chip bad">&#9888; needs referral</span>`
+            : `<span class="chip">${esc(r.latest_flag || "no decision yet")}</span>`}</td>
     </tr>`).join("");
-  return `<table>
+  return `<div class="sheet"><table>
       <thead><tr><th>id</th><th>name</th><th>goal</th><th>target</th>
                  <th>adherence</th><th>status</th></tr></thead>
       <tbody>${body}</tbody>
     </table>
-    <p class="hint">Select a row to open that user's full decision trail.</p>`;
+    <p class="hint">Select a row to open that user's full decision trail.</p></div>`;
 }
 
 async function loadOverviews(path) {
@@ -260,11 +311,12 @@ async function showHistory(userId) {
     const h = await api("GET", `/nutritionist/users/${userId}`, undefined, asNutritionist());
     const decisions = h.decisions.map((d) => `
       <tr><td>${esc(d.decision_type)}</td>
-          <td>${d.approved ? "approved" : "refused"}</td>
+          <td><span class="chip ${d.approved ? "good" : "bad"}">
+              ${d.approved ? "&#10003; approved" : "&#9888; refused"}</span></td>
           <td>${esc(d.notes)}</td></tr>`).join("");
     $("#pro-history").innerHTML = `
       <div class="card">
-        <h3><span class="step">history</span> ${esc(h.profile.name)}</h3>
+        ${head("&#9733;", esc(h.profile.name))}
         <dl>
           <dt>Plan versions</dt><dd>${h.plans.length}</dd>
           <dt>Assessments</dt><dd>${h.assessments.length}</dd>

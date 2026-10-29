@@ -23,10 +23,17 @@ def test_root_serves_the_client(client):
 
 
 def test_stylesheet_and_script_are_served(client):
-    for path, fragment in (("/style.css", "--accent"), ("/app.js", "async function api")):
+    for path, fragment in (("/style.css", "--surface"), ("/app.js", "async function api")):
         response = client.get(path)
         assert response.status_code == 200, path
         assert fragment in response.text, path
+
+
+def test_the_stylesheet_defines_a_dark_mode(client):
+    """Both scopes are needed: the OS setting and an explicit theme stamp."""
+    css = client.get("/style.css").text
+    assert "prefers-color-scheme: dark" in css
+    assert '[data-theme="dark"]' in css
 
 
 def test_the_mount_does_not_shadow_the_api(client):
