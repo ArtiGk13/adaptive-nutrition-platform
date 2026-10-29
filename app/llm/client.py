@@ -7,11 +7,13 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # A fixed string is returned whatever the prompt, so it must not assert anything about
-# the user. An earlier version congratulated them on their consistency, which contradicted
-# the assessment whenever adherence was poor.
+# the user: an early version congratulated them on their consistency, which contradicted
+# the assessment whenever adherence was poor. Nor may it describe itself, since it is
+# shown to whoever is using the system and a notice about configuration means nothing to
+# them. What is left is the one thing true of every cycle that reaches this point.
 MOCK_RESPONSE = (
-    "Explanatory text is not generated in this configuration. The assessment and the "
-    "decision it accompanies are unaffected."
+    "Your plan has been reviewed against what you logged, and the figures above show "
+    "where it now stands."
 )
 
 

@@ -129,6 +129,12 @@ document.querySelectorAll(".nav-item").forEach((item) => {
 
 /* ───────────────────────────── rendering ────────────────────────────── */
 
+
+/* The codes and the stored decision are the audit trail, and worth showing; they are
+   not what someone reading their own plan needs first. Folded away, open on request. */
+const tech = (inner) =>
+  `<details class="tech"><summary>Technical detail</summary>${inner}</details>`;
+
 const head = (mark, title) =>
   `<div class="card-head"><span class="stage">${mark}</span><h3>${title}</h3></div>`;
 
@@ -265,21 +271,24 @@ function cycleCards(result) {
       <div class="tiles" style="margin-top:18px">
         <div class="tile"><div class="k">Average intake</div>
              <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
-        <div class="tile"><div class="k">Assessment flag</div>
-             <div class="v" style="font-size:1rem;padding-top:7px">
-               <span class="chip">${esc(a.proposed_flag)}</span></div></div>
+        <div class="tile"><div class="k">Days off target</div>
+             <div class="v">${a.deviations.length}</div></div>
       </div>
       ${deviations}
     </div>
     <div class="card">
-      ${head("2", result.action.action_type === "continue" ? "Nothing needs to change" : "What changes")}
-      <p><span class="chip">${esc(result.action.action_type)}</span></p>
-      <p style="margin:12px 0 0">${esc(result.action.reason)}</p>
+      ${head("2", result.action.action_type === "continue"
+                  ? "Nothing needs to change" : "What changes")}
+      <p>${esc(result.action.reason)}</p>
+      ${tech(`<dl><dt>Action</dt><dd>${esc(result.action.action_type)}</dd></dl>`)}
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
       ${head(decision.approved ? "3" : "!",
              decision.approved ? "Safety check passed" : "Safety check stopped this")}
-      <dl>
+      <p>${decision.approved
+            ? "Every safety limit was checked before this was saved."
+            : esc(decision.notes)}</p>
+      ${tech(`<dl>
         <dt>Decision</dt>
         <dd><span class="chip ${decision.approved ? "good" : "bad"}">
             ${decision.approved ? "&#10003;" : "&#9888;"}
@@ -287,8 +296,8 @@ function cycleCards(result) {
         <dt>Guardrails</dt>
         <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}</dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
-      </dl>
-      ${decision.approved ? "" : `<p class="hint">${esc(decision.notes)}</p>`}
+        <dt>Recorded</dt><dd>${esc(decision.notes)}</dd>
+      </dl>`)}
     </div>
     ${planCard(result.plan)}
     ${feedback}`;

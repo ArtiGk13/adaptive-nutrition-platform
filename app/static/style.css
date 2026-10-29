@@ -201,6 +201,25 @@ body {
 
 .nav-item.active svg { opacity: 1; }
 
+.tech { margin-top: 14px; }
+
+.tech summary {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.tech summary::-webkit-details-marker { display: none; }
+.tech summary::before { content: "+ "; }
+.tech[open] summary::before { content: "– "; }
+.tech summary:hover { color: var(--ink-2); border-color: var(--muted); }
+.tech dl { margin-top: 12px; }
+
 /* What the system stored, shown as a quotation of the record rather than as the
    explanation — the plain sentences above it are the explanation. */
 .recorded {
