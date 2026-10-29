@@ -222,6 +222,53 @@ body {
   text-align: left;
 }
 
+.seg {
+  display: inline-flex;
+  gap: 2px;
+  margin: 12px 0 4px;
+  padding: 3px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.seg-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+
+.seg-btn.active { background: var(--brand); color: var(--brand-ink); font-weight: 550; }
+.seg-btn:hover { border-color: transparent; }
+.fields[hidden] { display: none; }
+.fields { margin-top: 12px; }
+
+.summary h3 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 620; }
+.summary .hero { margin: 0; }
+.summary .lede { margin: 16px 0 0; color: var(--ink-2); }
+
+.review { margin: 16px 0; }
+
+.review > summary {
+  display: inline-block;
+  padding: 7px 15px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.86rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.review > summary::-webkit-details-marker { display: none; }
+.review > summary::before { content: "+ "; }
+.review[open] > summary::before { content: "– "; }
+.review > summary:hover { border-color: var(--muted); color: var(--ink); }
+
 .tech { margin-top: 14px; }
 
 .tech summary {

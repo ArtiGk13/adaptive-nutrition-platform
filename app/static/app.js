@@ -262,13 +262,29 @@ function cycleCards(result) {
 
   const pct = Math.round(a.adherence_score * 100);
 
+  /* What actually happened, in one line, before any of the detail. A reader should not
+     have to assemble it from four cards and a code. */
+  const before = result.action.reason.match(/from (\d+) to (\d+)/);
+  const headline = before
+    ? `Your daily target moved from ${before[1]} to ${before[2]} kcal.`
+    : result.action.action_type === "continue"
+      ? "Your plan stays as it is."
+      : "Your plan was reviewed and kept, with extra support suggested.";
+
   return `
-    <div class="card">
-      ${head("1", "How the past weeks went")}
+    <div class="card summary">
+      <h3>${esc(headline)}</h3>
       <p class="hero">${pct}<span class="hero-unit">% adherence</span></p>
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
-      <div class="tiles" style="margin-top:18px">
+      <p class="lede">${esc(result.action.reason)}</p>
+    </div>
+
+    <details class="review">
+      <summary>See the full review</summary>
+    <div class="card">
+      ${head("1", "How the past weeks went")}
+      <div class="tiles">
         <div class="tile"><div class="k">Average intake</div>
              <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
         <div class="tile"><div class="k">Days off target</div>
@@ -300,7 +316,8 @@ function cycleCards(result) {
       </dl>`)}
     </div>
     ${planCard(result.plan)}
-    ${feedback}`;
+    ${feedback}
+    </details>`;
 }
 
 /* ──────────────────────────── onboarding ────────────────────────────── */
@@ -348,39 +365,9 @@ const currentUser = () => Number($("#plan-user").value);
 
 $("#btn-load").addEventListener("click", () => loadHome());
 
-$("#form-meal").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const f = new FormData(event.target);
-  try {
-    await api("POST", `/users/${currentUser()}/logs/meal`, {
-      timestamp: now(),
-      meal_slot: f.get("meal_slot"),
-      food_description: f.get("food_description"),
-      estimated_kcal: Number(f.get("estimated_kcal")),
-    });
-    note("#log-result", `Logged. Nothing changes in your plan until you press `
-      + `"Update my plan" — that is when it is reviewed against what you logged.`, false);
-    loadHome();
-  } catch (error) {
-    note("#log-result", error.message, true);
-  }
-});
 
-$("#form-weight").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const f = new FormData(event.target);
-  try {
-    await api("POST", `/users/${currentUser()}/logs/weight`, {
-      timestamp: now(),
-      weight_kg: Number(f.get("weight_kg")),
-    });
-    note("#log-result", `Weight recorded. Press "Update my plan" when you want `
-      + `the plan reviewed against it.`, false);
-    loadHome();
-  } catch (error) {
-    note("#log-result", error.message, true);
-  }
-});
+
+
 
 $("#btn-cycle").addEventListener("click", async () => {
   $("#cycle-view").innerHTML = `<div class="note">Running the cycle…</div>`;
@@ -534,12 +521,10 @@ function dailyIntake(logs) {
    the heading, the unit, the label on the baseline, and the sentence above it. */
 function lineChart(days, target, opts) {
   if (days.length < 2) {
-    return `<div class="card">
-      ${head(opts.mark, opts.title)}
-      <p class="hint">${days.length === 1
-        ? "One entry so far. A second one on another day gives something to draw."
-        : "Nothing logged yet."}</p>
-    </div>`;
+    return days.length === 1
+      ? `<div class="note plain">${esc(opts.title)}: one entry so far. Another on a
+          different day gives something to chart.</div>`
+      : "";
   }
 
   const W = 640, H = 200, L = 46, R = 14, T = 16, B = 26;
@@ -704,23 +689,7 @@ async function showProfile(id) {
   }
 }
 
-$("#form-activity").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const f = new FormData(event.target);
-  try {
-    await api("POST", `/users/${currentUser()}/logs/activity`, {
-      timestamp: now(),
-      activity_type: f.get("activity_type"),
-      duration_min: Number(f.get("duration_min")),
-      estimated_kcal_burned: Number(f.get("estimated_kcal_burned")),
-    });
-    note("#log-result", `Activity recorded. Press "Update my plan" when you want `
-      + `the plan reviewed against it.`, false);
-    loadHome();
-  } catch (error) {
-    note("#log-result", error.message, true);
-  }
-});
+
 
 /* Whether the server is answering at all, which is the difference between an empty
    screen and a broken one. */
@@ -739,3 +708,66 @@ async function checkHealth() {
 checkHealth();
 setInterval(checkHealth, 30000);
 fillPicker();
+
+/* ─────────────────────── logging, in one place ──────────────────────── */
+
+/* Three cards for three kinds of entry left the page full of gaps and the same button
+   repeated. One card, with the fields for whichever kind is chosen. */
+
+const logForm = $("#form-log");
+let logKind = "meal";
+
+function showFields(kind) {
+  logKind = kind;
+  logForm.querySelectorAll(".seg-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.kind === kind));
+  logForm.querySelectorAll(".fields").forEach((group) => {
+    group.hidden = group.dataset.kind !== kind;
+    /* only the visible fields are required, or the browser blocks a hidden one */
+    group.querySelectorAll("input, select").forEach((f) => { f.required = !group.hidden; });
+  });
+}
+
+logForm.querySelectorAll(".seg-btn").forEach((b) =>
+  b.addEventListener("click", () => showFields(b.dataset.kind)));
+
+/* One entry per kind, each naming its own endpoint. A single call with the kind
+   interpolated into the path would read more neatly and would hide all three from the
+   test that checks the client against the published API. */
+const LOG_CALL = {
+  meal: (id, f) => api("POST", `/users/${id}/logs/meal`, {
+    timestamp: now(),
+    meal_slot: f.get("meal_slot"),
+    food_description: f.get("food_description"),
+    estimated_kcal: Number(f.get("estimated_kcal")),
+  }),
+  weight: (id, f) => api("POST", `/users/${id}/logs/weight`, {
+    timestamp: now(),
+    weight_kg: Number(f.get("weight_kg")),
+  }),
+  activity: (id, f) => api("POST", `/users/${id}/logs/activity`, {
+    timestamp: now(),
+    activity_type: f.get("activity_type"),
+    duration_min: Number(f.get("duration_min")),
+    estimated_kcal_burned: Number(f.get("estimated_kcal_burned")),
+  }),
+};
+
+logForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!currentUser()) {
+    note("#log-result", "Choose who this is for first.", true);
+    return;
+  }
+  const f = new FormData(logForm);
+  try {
+    await LOG_CALL[logKind](currentUser(), f);
+    note("#log-result", "Added. Your plan is reviewed against your log when you press "
+      + "\u201cUpdate my plan\u201d.", false);
+    loadHome();
+  } catch (error) {
+    note("#log-result", error.message, true);
+  }
+});
+
+showFields("meal");

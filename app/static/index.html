@@ -208,10 +208,16 @@
       <div id="weight-view" class="result"></div>
       <div id="entries-view" class="result"></div>
 
-      <div class="two-col">
-        <form id="form-meal">
-          <div class="form-section">
-            <h2>Log a meal</h2>
+      <form id="form-log">
+        <div class="form-section">
+          <h2>Log something</h2>
+          <div class="seg" role="group" aria-label="What to log">
+            <button type="button" class="seg-btn active" data-kind="meal">Meal</button>
+            <button type="button" class="seg-btn" data-kind="weight">Weight</button>
+            <button type="button" class="seg-btn" data-kind="activity">Activity</button>
+          </div>
+
+          <div class="grid fields" data-kind="meal">
             <label>Meal
               <select name="meal_slot">
                 <option value="breakfast">breakfast</option>
@@ -220,34 +226,23 @@
                 <option value="snack">snack</option>
               </select>
             </label>
-            <label>What you ate <input name="food_description" required
-                   placeholder="pasta with chicken"></label>
-            <label>Estimated kcal
-              <input name="estimated_kcal" type="number" required placeholder="900"></label>
+            <label>What you ate <input name="food_description" placeholder="pasta with chicken"></label>
+            <label>Estimated kcal <input name="estimated_kcal" type="number" placeholder="900"></label>
           </div>
-          <div class="form-actions"><button type="submit">Add meal</button></div>
-        </form>
 
-        <form id="form-weight">
-          <div class="form-section">
-            <h2>Log your weight</h2>
-            <label>Weight (kg)
-              <input name="weight_kg" type="number" step="0.1" required placeholder="77.4"></label>
+          <div class="grid fields" data-kind="weight" hidden>
+            <label>Weight (kg) <input name="weight_kg" type="number" step="0.1" placeholder="77.4"></label>
           </div>
-          <div class="form-actions"><button type="submit">Add weight</button></div>
-        </form>
 
-        <form id="form-activity">
-          <div class="form-section">
-            <h2>Log activity</h2>
-            <label>What you did <input name="activity_type" required placeholder="walking"></label>
-            <label>Minutes <input name="duration_min" type="number" required placeholder="40"></label>
+          <div class="grid fields" data-kind="activity" hidden>
+            <label>What you did <input name="activity_type" placeholder="walking"></label>
+            <label>Minutes <input name="duration_min" type="number" placeholder="40"></label>
             <label>Estimated kcal burned
-              <input name="estimated_kcal_burned" type="number" required placeholder="180"></label>
+              <input name="estimated_kcal_burned" type="number" placeholder="180"></label>
           </div>
-          <div class="form-actions"><button type="submit">Add activity</button></div>
-        </form>
-      </div>
+        </div>
+        <div class="form-actions"><button type="submit">Add to my log</button></div>
+      </form>
 
       <div id="log-result" class="note"></div>
       <div id="cycle-view" class="result"></div>
