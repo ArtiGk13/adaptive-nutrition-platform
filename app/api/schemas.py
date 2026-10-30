@@ -239,6 +239,12 @@ class ActionRead(BaseModel):
         return cls(action_type=action.action_type, reason=action.reason)
 
 
+class GuardrailCheckRead(BaseModel):
+    code: str
+    passed: bool
+    message: str
+
+
 class DecisionRead(BaseModel):
     decision_id: int | None
     decision_type: DecisionType
@@ -251,6 +257,7 @@ class DecisionRead(BaseModel):
     # a decision is built before the plan is stored, so the number it holds is the one
     # on the draft, not the one the stored plan ends up with.
     cycle_timestamp: datetime
+    checks: list[GuardrailCheckRead]
 
     @classmethod
     def from_domain(cls, decision: SupervisorDecision) -> "DecisionRead":
@@ -262,6 +269,10 @@ class DecisionRead(BaseModel):
             failed_checks=decision.failed_checks,
             notes=decision.notes,
             cycle_timestamp=decision.cycle_timestamp,
+            checks=[
+                GuardrailCheckRead(code=c.code, passed=c.passed, message=c.message)
+                for c in decision.checks
+            ],
         )
 
 

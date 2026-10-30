@@ -34,6 +34,15 @@ class AdaptationAction:
         return self.action_type != ActionType.CONTINUE
 
 
+@dataclass(frozen=True)
+class GuardrailCheck:
+    """One limit the Supervisor tested, and what it found."""
+
+    code: str
+    passed: bool
+    message: str
+
+
 @dataclass
 class SupervisorDecision:
     user_id: int
@@ -44,6 +53,12 @@ class SupervisorDecision:
     resulting_plan_version: int | None = None
     failed_checks: list[str] = field(default_factory=list)
     decision_id: int | None = None
+    # Every check the Supervisor ran, each with what it concluded. Computed already and
+    # thrown away before: only the failures were kept, which left a passing decision
+    # able to say that limits were checked and not which ones. Held on the decision for
+    # the cycle that produced it rather than stored, since the stored record is the
+    # outcome and the checks are reproducible from the plan and the profile.
+    checks: list["GuardrailCheck"] = field(default_factory=list)
 
     @property
     def approved(self) -> bool:

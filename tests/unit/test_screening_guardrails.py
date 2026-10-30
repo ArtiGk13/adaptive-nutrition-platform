@@ -66,3 +66,24 @@ def test_screening_checks_run_before_any_logging_exists(sample_profile):
     sample_profile.medical_conditions = ["coeliac disease"]
     codes = {r.code for r in run_profile_checks(sample_profile, []) if not r.passed}
     assert "declared_condition" in codes
+
+
+def test_a_decision_reports_every_check_not_only_the_failures(sample_profile):
+    """A passing decision could say limits had been checked and not say which, because
+    the Supervisor computed them all and kept only the failures."""
+    import asyncio
+
+    from app.agents.supervisor import SupervisorAgent
+    from app.agents.planner import PlannerAgent
+
+    async def run():
+        plan = await PlannerAgent().create_initial_plan(sample_profile)
+        return await SupervisorAgent().validate_plan(plan, sample_profile, [])
+
+    decision = asyncio.run(run())
+
+    assert decision.approved
+    codes = {check.code for check in decision.checks}
+    assert {"age_out_of_range", "declared_condition", "min_calories"} <= codes
+    assert all(check.message for check in decision.checks)
+    assert all(check.passed for check in decision.checks)

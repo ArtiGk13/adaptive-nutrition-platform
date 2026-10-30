@@ -134,9 +134,7 @@ document.querySelectorAll(".nav-item").forEach((item) => {
    not what someone reading their own plan needs first. Folded away, open on request. */
 const tech = (inner) =>
   `<details class="tech"><summary>What was recorded</summary>
-     <p class="hint">These are the values the system stored for this decision. They are
-        kept so a dietitian, or anyone reviewing the system, can see exactly what it did
-        and why.</p>${inner}</details>`;
+     <p class="hint">The exact values stored alongside this decision.</p>${inner}</details>`;
 
 /* The stored value names the branch taken. Shown with the plain meaning first, because
    the code is the record and not an explanation. */
@@ -276,6 +274,27 @@ function supportBlock(result) {
     </div>`;
 }
 
+/* Which limits were tested and what each found. The Supervisor runs them all and used
+   to report only the failures, so a passing decision could say that limits had been
+   checked without saying which. */
+function checkList(decision) {
+  const checks = decision.checks || [];
+  if (!checks.length) {
+    return `<p>${esc(decision.notes)}</p>`;
+  }
+  const failures = checks.filter((c) => !c.passed).length;
+  const headline = failures
+    ? `${failures} of ${checks.length} limits were not met.`
+    : `All ${checks.length} limits were met.`;
+  return `
+    <p>${headline}</p>
+    <ul class="checks">
+      ${checks.map((c) => `<li class="${c.passed ? "ok" : "no"}">
+        <span aria-hidden="true">${c.passed ? "&#10003;" : "&#10007;"}</span>
+        ${esc(c.message)}</li>`).join("")}
+    </ul>`;
+}
+
 function cycleCards(result) {
   const a = result.assessment;
   const deviations = a.deviations.length
@@ -328,9 +347,7 @@ function cycleCards(result) {
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
       ${head(decision.approved ? "3" : "!", "Safety checks")}
-      <p>${decision.approved
-            ? "Every safety limit was checked before this was saved."
-            : esc(decision.notes)}</p>
+      ${checkList(decision)}
 
     </div>
     ${planCard(result.plan)}
@@ -347,10 +364,10 @@ function cycleCards(result) {
           ${decision.approved ? "&#10003;" : "&#9888;"}
           ${esc(DECISION_SAID[decision.decision_type] || decision.decision_type)}</span>
           <span class="raw">${esc(decision.decision_type)}</span></dd>
-      <dt>Safety limits</dt>
-      <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}${
-          decision.failed_checks.length
-            ? ` — ${esc(decision.failed_checks.join(", "))}` : ""}</dd>
+      ${decision.failed_checks.length
+          ? `<dt>Limits not met</dt>
+             <dd><span class="raw">${esc(decision.failed_checks.join(", "))}</span></dd>`
+          : ""}
       <dt>Stored note</dt><dd>${esc(decision.notes)}</dd>
     </dl>`)}
     </details>`;

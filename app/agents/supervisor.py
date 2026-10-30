@@ -6,7 +6,13 @@ from app.agents.guardrails import (
     run_plan_checks,
     run_profile_checks,
 )
-from app.domain.decisions import ActionType, AdaptationAction, DecisionType, SupervisorDecision
+from app.domain.decisions import (
+    ActionType,
+    AdaptationAction,
+    DecisionType,
+    GuardrailCheck,
+    SupervisorDecision,
+)
 from app.domain.log_entry import LogEntry
 from app.domain.nutrition_plan import NutritionPlan
 from app.domain.user_profile import UserProfile
@@ -45,6 +51,7 @@ class SupervisorAgent:
                 checks_passed=not failed(results),
                 notes="The system action leads to a specialist referral.",
                 failed_checks=[result.code for result in failed(results)],
+                checks=results,
             )
 
         return self._decide(
@@ -72,6 +79,7 @@ class SupervisorAgent:
                 notes=approved_notes,
                 failed_checks=[],
                 plan_version=plan_version,
+                checks=results,
             )
 
         referral_codes = {
@@ -89,6 +97,7 @@ class SupervisorAgent:
             checks_passed=False,
             notes=" ".join(failure.message for failure in failures),
             failed_checks=[failure.code for failure in failures],
+            checks=results,
         )
 
     def _build(
@@ -99,6 +108,7 @@ class SupervisorAgent:
         notes: str,
         failed_checks: list[str],
         plan_version: int | None = None,
+        checks: list[GuardrailResult] | None = None,
     ) -> SupervisorDecision:
         decision = SupervisorDecision(
             user_id=profile.user_id,
@@ -108,6 +118,10 @@ class SupervisorAgent:
             notes=notes,
             failed_checks=failed_checks,
             resulting_plan_version=plan_version,
+            checks=[
+                GuardrailCheck(code=r.code, passed=r.passed, message=r.message)
+                for r in (checks or [])
+            ],
         )
         supervisor_logger.info(
             "user=%s decision=%s checks_passed=%s failed=%s notes=%s",
