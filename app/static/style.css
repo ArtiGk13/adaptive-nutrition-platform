@@ -311,6 +311,13 @@ button.more {
 .review[open] > summary::before { content: "– "; }
 .review > summary:hover { border-color: var(--muted); color: var(--ink); }
 
+.review-intro {
+  max-width: 62ch;
+  margin: 16px 0 4px;
+  color: var(--ink-2);
+  font-size: 0.89rem;
+}
+
 .tech { margin-top: 14px; }
 
 .tech summary {

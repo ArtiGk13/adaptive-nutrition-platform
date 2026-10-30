@@ -194,7 +194,7 @@ function planCard(plan) {
     .join("");
   return `
     <div class="card">
-      ${head("4", `Plan &middot; version ${plan.version}`)}
+      ${head("4", `This is the plan now &middot; version ${plan.version}`)}
       <div class="tiles">
         <div class="tile"><div class="k">Daily energy</div>
              <div class="v">${plan.calorie_target} <small>kcal</small></div></div>
@@ -309,8 +309,10 @@ function cycleCards(result) {
 
     <details class="review">
       <summary>See the full review</summary>
+      <p class="review-intro">Four things happened, in this order. Each one is a separate
+         part of the system, and each had to finish before the next could start.</p>
     <div class="card">
-      ${head("1", "How the past weeks went")}
+      ${head("1", "It read your log")}
       <div class="tiles">
         <div class="tile"><div class="k">Average intake</div>
              <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
@@ -321,29 +323,40 @@ function cycleCards(result) {
     </div>
     <div class="card">
       ${head("2", result.action.action_type === "continue"
-                  ? "Nothing needs to change" : "What changes")}
+                  ? "It decided nothing needed to change"
+                  : "It decided what to change")}
       <p>${esc(result.action.reason)}</p>
-      ${tech(`<dl><dt>Action</dt><dd>${said(ACTION_SAID, result.action.action_type)}</dd></dl>`)}
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
       ${head(decision.approved ? "3" : "!",
-             decision.approved ? "Safety check passed" : "Safety check stopped this")}
+             decision.approved
+               ? "It checked that against the safety limits"
+               : "The safety limits stopped it")}
       <p>${decision.approved
             ? "Every safety limit was checked before this was saved."
             : esc(decision.notes)}</p>
-      ${tech(`<dl>
-        <dt>Decision</dt>
-        <dd><span class="chip ${decision.approved ? "good" : "bad"}">
-            ${decision.approved ? "&#10003;" : "&#9888;"}
-            ${esc(DECISION_SAID[decision.decision_type] || decision.decision_type)}</span>
-            <span class="raw">${esc(decision.decision_type)}</span></dd>
-        <dt>Guardrails</dt>
-        <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}</dd>
-        <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
-        <dt>Recorded</dt><dd>${esc(decision.notes)}</dd>
-      </dl>`)}
+
     </div>
     ${planCard(result.plan)}
+
+    ${tech(`<dl>
+      <dt>Assessment</dt>
+      <dd>${(a.adherence_score * 100).toFixed(0)}% adherence over
+          ${a.deviations.length} day${a.deviations.length === 1 ? "" : "s"} off target
+          <span class="raw">${esc(a.proposed_flag)}</span></dd>
+      <dt>Action chosen</dt>
+      <dd>${said(ACTION_SAID, result.action.action_type)}</dd>
+      <dt>Supervisor decision</dt>
+      <dd><span class="chip ${decision.approved ? "good" : "bad"}">
+          ${decision.approved ? "&#10003;" : "&#9888;"}
+          ${esc(DECISION_SAID[decision.decision_type] || decision.decision_type)}</span>
+          <span class="raw">${esc(decision.decision_type)}</span></dd>
+      <dt>Safety limits</dt>
+      <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}${
+          decision.failed_checks.length
+            ? ` — ${esc(decision.failed_checks.join(", "))}` : ""}</dd>
+      <dt>Stored note</dt><dd>${esc(decision.notes)}</dd>
+    </dl>`)}
     </details>`;
 }
 
