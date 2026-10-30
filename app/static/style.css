@@ -760,17 +760,6 @@ tbody tr:hover { background: var(--raised); }
 .note.error { background: var(--critical-wash); color: var(--critical); }
 .note.plain { background: var(--raised); color: var(--ink-2); border: 1px solid var(--line); font-weight: 450; }
 
-.generated { margin: 14px 0; padding: 16px 18px; border: 1px dashed var(--line); border-radius: 11px; }
-
-.generated .k {
-  font-size: 0.7rem;
-  font-weight: 620;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.generated p { margin: 8px 0 0; font-size: 0.91rem; }
 
 /* ─────────────────────────── narrow ────────────────────────────── */
 

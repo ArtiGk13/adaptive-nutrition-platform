@@ -266,14 +266,6 @@ function cycleCards(result) {
     : `<p class="hint">You stayed close to your plan throughout.</p>`;
 
   const decision = result.supervisor_decision;
-  const feedback = result.feedback_text
-    ? `<div class="generated">
-         <span class="k">Generated wording</span>
-         <p>${esc(result.feedback_text)}</p>
-         <p class="hint">Written to explain the change above. It does not affect any of
-            your numbers.</p>
-       </div>`
-    : "";
 
   const pct = Math.round(a.adherence_score * 100);
 
@@ -292,7 +284,7 @@ function cycleCards(result) {
       <p class="hero">${pct}<span class="hero-unit">% adherence</span></p>
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
-      <p class="lede">${esc(result.action.reason)}</p>
+      <p class="lede">${esc(result.feedback_text || result.action.reason)}</p>
     </div>
 
     <details class="review">
@@ -332,7 +324,6 @@ function cycleCards(result) {
       </dl>`)}
     </div>
     ${planCard(result.plan)}
-    ${feedback}
     </details>`;
 }
 
