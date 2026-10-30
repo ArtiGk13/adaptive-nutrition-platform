@@ -96,3 +96,11 @@ def test_unknown_path_is_not_answered_with_the_page(client):
     """A missing endpoint must still be a 404, or a typo in a URL would look like success."""
     assert client.get("/users/9999/plan").status_code == 404
     assert client.get("/no-such-file.css").status_code == 404
+
+
+def test_the_client_is_not_cached_indefinitely(client):
+    """No build step means no fingerprint in the filename, so every version of the
+    script comes from the same URL. Without this header a browser keeps the old one and
+    an edit looks as though it did nothing."""
+    for path in ("/", "/app.js", "/style.css"):
+        assert client.get(path).headers.get("cache-control") == "no-cache", path

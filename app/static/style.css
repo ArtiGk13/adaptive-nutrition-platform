@@ -204,10 +204,37 @@ body {
 .chart { display: block; width: 100%; height: auto; margin-top: 8px; }
 .chart circle[fill="transparent"] { cursor: default; }
 
-.meal .when {
-  flex: 0 0 82px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
+.days { display: grid; gap: 6px; margin-top: 4px; }
+
+.day > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--raised);
+  font-size: 0.86rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.day > summary::-webkit-details-marker { display: none; }
+.day > summary::before { content: "▸"; color: var(--muted); font-size: 0.72rem; }
+.day[open] > summary::before { content: "▾"; }
+.day > summary:hover { border-color: var(--muted); }
+.day .when { font-variant-numeric: tabular-nums; }
+.day .count { color: var(--muted); font-size: 0.8rem; }
+.day .total { margin-left: auto; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.day .meals { margin: 6px 0 10px 24px; }
+
+button.more {
+  margin-top: 12px;
+  width: 100%;
+  background: none;
+  border-style: dashed;
+  color: var(--ink-2);
+  font-size: 0.84rem;
 }
 
 .caveat {

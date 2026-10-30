@@ -602,25 +602,77 @@ function weightSeries(logs) {
     .sort((a, b) => a.day.localeCompare(b.day));
 }
 
-function entriesCard(logs) {
-  if (!logs.length) return "";
-  const rows = logs.slice(-8).reverse().map((e) => {
-    const what = e.type === "meal"
-      ? `${esc(e.details.meal_slot)} — ${esc(e.details.food_description)}`
-      : e.type === "weight" ? "weight" : esc(e.details.activity_type || e.type);
-    const value = e.type === "meal" ? `${e.details.estimated_kcal} kcal`
-      : e.type === "weight" ? `${e.details.weight_kg} kg`
-      : `${e.details.duration_min || ""} min`;
-    return `<div class="meal"><span class="when">${esc(e.timestamp.slice(0, 10))}</span>
-              ${what}<span>${value}</span></div>`;
+/* A month of logging is a few hundred rows. Showing the last eight of them hid
+   everything older with no way back; showing all of them would be a page of scrolling.
+   Grouped by day instead, each day a line that opens — which is also how a person
+   thinks about what they ate. */
+
+function describeEntry(e) {
+  if (e.type === "meal") {
+    return [`${e.details.meal_slot} — ${e.details.food_description}`,
+            `${e.details.estimated_kcal} kcal`];
+  }
+  if (e.type === "weight") return ["weight", `${e.details.weight_kg} kg`];
+  return [e.details.activity_type || "activity",
+          `${e.details.duration_min} min`];
+}
+
+function entriesCard(logs, showAll) {
+  if (!logs.length) {
+    return `<div class="card">${head("☰", "What you logged")}
+      <p class="hint">Nothing logged yet.</p></div>`;
+  }
+
+  const byDay = new Map();
+  for (const entry of logs) {
+    const day = entry.timestamp.slice(0, 10);
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day).push(entry);
+  }
+
+  const days = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  const shown = showAll ? days : days.slice(0, 7);
+
+  const body = shown.map(([day, entries], index) => {
+    const kcal = entries.filter((e) => e.type === "meal")
+      .reduce((sum, e) => sum + (e.details.estimated_kcal || 0), 0);
+    const rows = entries.map((e) => {
+      const [what, value] = describeEntry(e);
+      return `<div class="meal">${esc(what)}<span>${esc(value)}</span></div>`;
+    }).join("");
+    return `<details class="day"${index === 0 ? " open" : ""}>
+        <summary>
+          <span class="when">${esc(day)}</span>
+          <span class="count">${entries.length}
+            ${entries.length === 1 ? "entry" : "entries"}</span>
+          <span class="total">${kcal ? kcal + " kcal" : ""}</span>
+        </summary>
+        <div class="meals">${rows}</div>
+      </details>`;
   }).join("");
-  return `
-    <div class="card">
-      ${head("\u2630", "What you logged")}
-      <div class="meals">${rows}</div>
-      <p class="hint">Showing the most recent ${Math.min(8, logs.length)} of
-         ${logs.length} entries.</p>
-    </div>`;
+
+  const more = days.length > 7
+    ? `<button type="button" id="btn-more-days" class="more">${showAll
+        ? "Show recent days only"
+        : `Show all ${days.length} days`}</button>`
+    : "";
+
+  return `<div class="card">${head("☰", "What you logged")}
+    <div class="days">${body}</div>${more}</div>`;
+}
+
+let allDays = false;
+
+/* Re-rendered in place when the toggle is used, rather than refetching the lot. */
+function renderEntries(logs) {
+  $("#entries-view").innerHTML = entriesCard(logs, allDays);
+  const moreButton = $("#btn-more-days");
+  if (moreButton) {
+    moreButton.addEventListener("click", () => {
+      allDays = !allDays;
+      renderEntries(logs);
+    });
+  }
 }
 
 async function loadHome() {
@@ -657,7 +709,7 @@ async function loadHome() {
           : `${total} weigh-ins, at or below the target of ${target} kg.`,
       }) : "";
 
-    $("#entries-view").innerHTML = entriesCard(logs);
+    renderEntries(logs);
   } catch (error) {
     $("#entries-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
   }
