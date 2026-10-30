@@ -750,9 +750,18 @@ tbody tr:hover { background: var(--raised); }
   .sidebar nav { flex-direction: row; }
   .nav-item { white-space: nowrap; }
 
+  /* The bar is one row here, so nothing in it may wrap: the brand was breaking over
+     three lines and the name badge over four, inside a box. */
+  .brand-text strong, .brand-text small { white-space: nowrap; }
+  .whoami { flex: none; margin: 0 0 0 auto; padding: 6px 10px; white-space: nowrap; }
+  /* The dot still carries the state; the word beside it is what pushes the row into
+     a scrollbar on a narrow screen. */
+  .status { margin: 0; padding: 0; white-space: nowrap; }
+  .status span:last-child { display: none; }
+
   /* The explanatory text and the link go, but not the theme control: hiding the whole
      footer here left narrow screens with no way to change theme at all. */
-  .side-foot { margin: 0 0 0 auto; padding: 0; }
+  .side-foot { flex: none; margin: 0; padding: 0; }
   .side-foot p, .side-foot a { display: none; }
   .theme-toggle { width: auto; margin: 0; }
   .theme-toggle .theme-label { display: none; }
