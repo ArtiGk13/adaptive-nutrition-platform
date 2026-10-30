@@ -828,8 +828,8 @@ logForm.addEventListener("submit", async (event) => {
   const f = new FormData(logForm);
   try {
     await LOG_CALL[logKind](currentUser(), f);
-    note("#log-result", "Added. Your plan is reviewed against your log when you press "
-      + "\u201cUpdate my plan\u201d.", false);
+    note("#log-result", "Added. Your plan is checked against your log when you press "
+      + "\u201cReview my plan\u201d.", false);
     loadHome();
   } catch (error) {
     note("#log-result", error.message, true);
