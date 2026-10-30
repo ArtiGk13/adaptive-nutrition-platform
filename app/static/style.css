@@ -292,31 +292,50 @@ button.more {
 .support ul.plain { margin: 0; color: var(--ink); font-size: 0.9rem; }
 .support ul.plain li { margin: 3px 0; }
 
-.review { margin: 16px 0; }
+.review { margin: 18px 0; }
 
+/* A full-width bar rather than a small pill: it is the way into everything the system
+   did, and it was easy to miss. */
 .review > summary {
-  display: inline-block;
-  padding: 7px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 12px;
   background: var(--surface);
-  color: var(--ink-2);
-  font-size: 0.86rem;
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 560;
   cursor: pointer;
   list-style: none;
+  transition: border-color 0.14s, background 0.14s;
 }
 
 .review > summary::-webkit-details-marker { display: none; }
-.review > summary::before { content: "+ "; }
-.review[open] > summary::before { content: "– "; }
-.review > summary:hover { border-color: var(--muted); color: var(--ink); }
 
-.review-intro {
-  max-width: 62ch;
-  margin: 16px 0 4px;
-  color: var(--ink-2);
-  font-size: 0.89rem;
+.review > summary svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.18s ease;
 }
+
+.review[open] > summary {
+  border-color: var(--muted);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.review[open] > summary svg { transform: rotate(180deg); }
+.review > summary:hover { border-color: var(--muted); }
+.review > summary:hover svg { color: var(--ink); }
+
+/* the opened body hangs from the bar */
+.review[open] > .card:first-of-type { border-top-left-radius: 0; border-top-right-radius: 0; }
 
 .tech { margin-top: 14px; }
 

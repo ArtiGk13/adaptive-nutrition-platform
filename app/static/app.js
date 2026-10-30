@@ -194,7 +194,7 @@ function planCard(plan) {
     .join("");
   return `
     <div class="card">
-      ${head("4", `This is the plan now &middot; version ${plan.version}`)}
+      ${head("4", `Your plan &middot; version ${plan.version}`)}
       <div class="tiles">
         <div class="tile"><div class="k">Daily energy</div>
              <div class="v">${plan.calorie_target} <small>kcal</small></div></div>
@@ -308,11 +308,12 @@ function cycleCards(result) {
     </div>
 
     <details class="review">
-      <summary>See the full review</summary>
-      <p class="review-intro">Four things happened, in this order. Each one is a separate
-         part of the system, and each had to finish before the next could start.</p>
+      <summary><span>How this was decided</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m6 9 6 6 6-6"/></svg></summary>
     <div class="card">
-      ${head("1", "It read your log")}
+      ${head("1", "Your log")}
       <div class="tiles">
         <div class="tile"><div class="k">Average intake</div>
              <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
@@ -322,16 +323,11 @@ function cycleCards(result) {
       ${deviations}
     </div>
     <div class="card">
-      ${head("2", result.action.action_type === "continue"
-                  ? "It decided nothing needed to change"
-                  : "It decided what to change")}
+      ${head("2", "The decision")}
       <p>${esc(result.action.reason)}</p>
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
-      ${head(decision.approved ? "3" : "!",
-             decision.approved
-               ? "It checked that against the safety limits"
-               : "The safety limits stopped it")}
+      ${head(decision.approved ? "3" : "!", "Safety checks")}
       <p>${decision.approved
             ? "Every safety limit was checked before this was saved."
             : esc(decision.notes)}</p>
