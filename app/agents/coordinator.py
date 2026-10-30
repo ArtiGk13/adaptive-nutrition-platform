@@ -9,7 +9,7 @@ from app.agents.supervisor import SupervisorAgent
 from app.agents.tutor import TutorContentAgent
 from app.db import repository
 from app.domain.assessment import AssessmentResult
-from app.domain.decisions import AdaptationAction, SupervisorDecision
+from app.domain.decisions import ActionType, AdaptationAction, SupervisorDecision
 from app.domain.log_entry import WeightLogEntry
 from app.domain.nutrition_plan import NutritionPlan
 from app.domain.user_profile import UserProfile
@@ -23,6 +23,7 @@ class CycleResult:
     action: AdaptationAction
     decision: SupervisorDecision
     feedback_text: str | None = None
+    support_text: str | None = None
 
 
 class Coordinator:
@@ -81,6 +82,26 @@ class Coordinator:
             action=action,
             decision=decision,
             feedback_text=feedback_text,
+            support_text=await self._support(profile, action, assessment, resulting_plan),
+        )
+
+    async def _support(self, profile, action, assessment, plan) -> str | None:
+        """The content the Tutor offers when the chosen action is to offer support.
+
+        Without this the action named support and delivered none: the agent could write
+        it, and nothing asked it to. The slot passed is the largest in the plan, where a
+        change to a meal makes the most difference to a day; that is a presentational
+        choice and carries no clinical claim.
+        """
+        if action.action_type != ActionType.EXTRA_SUPPORT:
+            return None
+        if not assessment.detected_difficulties or plan is None:
+            return None
+        slot = max(plan.meal_structure, key=lambda s: s.target_kcal, default=None)
+        if slot is None:
+            return None
+        return await self.tutor.generate_content(
+            profile, assessment.detected_difficulties[0], slot.slot_name
         )
 
     def _sync_weight(self, session: Session, profile: UserProfile, logs: list) -> None:

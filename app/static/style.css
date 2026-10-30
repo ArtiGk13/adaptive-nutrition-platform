@@ -278,6 +278,18 @@ button.more {
 .summary .hero { margin: 0; }
 .summary .lede { margin: 16px 0 0; color: var(--ink-2); }
 
+.support {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--meter-fill);
+  border-radius: 10px;
+  background: var(--raised);
+}
+
+.support h4 { margin: 0 0 6px; font-size: 0.88rem; font-weight: 620; }
+.support p { margin: 0; font-size: 0.92rem; color: var(--ink-2); }
+
 .review { margin: 16px 0; }
 
 .review > summary {

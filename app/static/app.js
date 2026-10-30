@@ -285,6 +285,9 @@ function cycleCards(result) {
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
       <p class="lede">${esc(result.feedback_text || result.action.reason)}</p>
+      ${result.support_text && result.support_text !== result.feedback_text
+        ? `<div class="support"><h4>Something that might help</h4>
+             <p>${esc(result.support_text)}</p></div>` : ""}
     </div>
 
     <details class="review">

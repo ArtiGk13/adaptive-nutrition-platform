@@ -329,6 +329,7 @@ class CycleResponse(BaseModel):
     action: ActionRead
     supervisor_decision: DecisionRead
     feedback_text: str | None
+    support_text: str | None
 
     @classmethod
     def from_domain(cls, result: CycleResult) -> "CycleResponse":
@@ -338,4 +339,5 @@ class CycleResponse(BaseModel):
             action=ActionRead.from_domain(result.action),
             supervisor_decision=DecisionRead.from_domain(result.decision),
             feedback_text=result.feedback_text,
+            support_text=result.support_text,
         )

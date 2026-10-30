@@ -116,3 +116,60 @@ async def test_onboarding_refuses_users_showing_screening_signals(session, sampl
 async def test_cycle_for_unknown_user_raises(session):
     with pytest.raises(LookupError):
         await cycle_service.run_cycle(session, 999)
+
+
+async def test_extra_support_actually_carries_support(session, sample_profile):
+    """The action named support and delivered none: the Tutor could write the content,
+    and nothing called it, while Section 4.5 says the system does."""
+    from datetime import datetime, timezone
+
+    from app.agents.coordinator import Coordinator
+    from app.domain.assessment import AssessmentFlag, AssessmentResult
+    from app.domain.decisions import AdaptationAction
+
+    asked: list[tuple[str, str]] = []
+
+    class RecordingTutor:
+        async def generate_feedback(self, action, assessment):
+            return "feedback"
+
+        async def generate_content(self, profile, difficulty, meal_slot):
+            asked.append((difficulty, meal_slot))
+            return "a practical suggestion"
+
+    class AlwaysStuck:
+        async def decide(self, profile, plan, assessment):
+            return AdaptationAction(
+                action_type=ActionType.EXTRA_SUPPORT,
+                reason="Low adherence or incomplete logging — extra support is needed.",
+            )
+
+    class AlwaysFlagging:
+        async def evaluate(self, profile, plan, logs):
+            return AssessmentResult(
+                user_id=profile.user_id,
+                timestamp=datetime.now(timezone.utc),
+                plan_id=plan.plan_id,
+                adherence_score=0.2,
+                average_daily_kcal=900.0,
+                deviations=[],
+                detected_difficulties=["Consistently falling short of the calorie target."],
+                proposed_flag=AssessmentFlag.EXTRA_SUPPORT,
+            )
+
+    user = repository.create_user(session, sample_profile)
+    await cycle_service.create_initial_plan(session, user.user_id)
+
+    coordinator = Coordinator()
+    coordinator.tutor = RecordingTutor()
+    coordinator.adapter = AlwaysStuck()
+    coordinator.assessor = AlwaysFlagging()
+
+    result = await cycle_service.run_cycle(session, user.user_id, coordinator)
+
+    assert result.action.action_type is ActionType.EXTRA_SUPPORT
+    assert result.support_text == "a practical suggestion"
+    assert asked, "the Tutor was never asked for content"
+    difficulty, slot = asked[0]
+    assert "calorie target" in difficulty
+    assert slot in {s.slot_name for s in result.plan.meal_structure}
