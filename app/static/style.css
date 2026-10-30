@@ -288,7 +288,9 @@ button.more {
 }
 
 .support h4 { margin: 0 0 6px; font-size: 0.88rem; font-weight: 620; }
-.support p { margin: 0; font-size: 0.92rem; color: var(--ink-2); }
+.support p { margin: 10px 0 0; font-size: 0.92rem; color: var(--ink-2); }
+.support ul.plain { margin: 0; color: var(--ink); font-size: 0.9rem; }
+.support ul.plain li { margin: 3px 0; }
 
 .review { margin: 16px 0; }
 

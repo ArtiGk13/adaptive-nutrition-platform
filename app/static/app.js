@@ -257,6 +257,25 @@ function refusalCard(decision) {
     </div>`;
 }
 
+/* What the Assessment agent actually found, which is the part that is true whether or
+   not a language model is available: the difficulties are computed in code. A generated
+   suggestion is added underneath when there is one, and the mock provider returns the
+   same fixed sentence for both kinds of text, so an identical one is not repeated. */
+function supportBlock(result) {
+  const found = result.assessment.detected_difficulties || [];
+  const suggestion = result.support_text && result.support_text !== result.feedback_text
+    ? result.support_text : null;
+  if (!found.length && !suggestion) return "";
+
+  return `<div class="support">
+      <h4>What is getting in the way</h4>
+      ${found.length
+        ? `<ul class="plain">${found.map((d) => `<li>${esc(d)}</li>`).join("")}</ul>`
+        : ""}
+      ${suggestion ? `<p>${esc(suggestion)}</p>` : ""}
+    </div>`;
+}
+
 function cycleCards(result) {
   const a = result.assessment;
   const deviations = a.deviations.length
@@ -285,9 +304,7 @@ function cycleCards(result) {
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
       <p class="lede">${esc(result.feedback_text || result.action.reason)}</p>
-      ${result.support_text && result.support_text !== result.feedback_text
-        ? `<div class="support"><h4>Something that might help</h4>
-             <p>${esc(result.support_text)}</p></div>` : ""}
+      ${supportBlock(result)}
     </div>
 
     <details class="review">
