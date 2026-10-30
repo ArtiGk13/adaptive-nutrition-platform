@@ -133,7 +133,22 @@ document.querySelectorAll(".nav-item").forEach((item) => {
 /* The codes and the stored decision are the audit trail, and worth showing; they are
    not what someone reading their own plan needs first. Folded away, open on request. */
 const tech = (inner) =>
-  `<details class="tech"><summary>Technical detail</summary>${inner}</details>`;
+  `<details class="tech"><summary>What was recorded</summary>
+     <p class="hint">These are the values the system stored for this decision. They are
+        kept so a dietitian, or anyone reviewing the system, can see exactly what it did
+        and why.</p>${inner}</details>`;
+
+/* The stored value names the branch taken. Shown with the plain meaning first, because
+   the code is the record and not an explanation. */
+const ACTION_SAID = {
+  continue: "Keep the plan as it is",
+  adjust_plan: "Change the daily calorie target",
+  extra_support: "Keep the plan, and offer extra support",
+  refer_specialist: "Stop, and refer to a professional",
+};
+
+const said = (map, value) =>
+  `${esc(map[value] || value)} <span class="raw">${esc(value)}</span>`;
 
 const head = (mark, title) =>
   `<div class="card-head"><span class="stage">${mark}</span><h3>${title}</h3></div>`;
@@ -296,7 +311,7 @@ function cycleCards(result) {
       ${head("2", result.action.action_type === "continue"
                   ? "Nothing needs to change" : "What changes")}
       <p>${esc(result.action.reason)}</p>
-      ${tech(`<dl><dt>Action</dt><dd>${esc(result.action.action_type)}</dd></dl>`)}
+      ${tech(`<dl><dt>Action</dt><dd>${said(ACTION_SAID, result.action.action_type)}</dd></dl>`)}
     </div>
     <div class="card${decision.approved ? "" : " refuse"}">
       ${head(decision.approved ? "3" : "!",
@@ -308,7 +323,8 @@ function cycleCards(result) {
         <dt>Decision</dt>
         <dd><span class="chip ${decision.approved ? "good" : "bad"}">
             ${decision.approved ? "&#10003;" : "&#9888;"}
-            ${esc(decision.decision_type)}</span></dd>
+            ${esc(DECISION_SAID[decision.decision_type] || decision.decision_type)}</span>
+            <span class="raw">${esc(decision.decision_type)}</span></dd>
         <dt>Guardrails</dt>
         <dd>${decision.guardrail_checks_passed ? "all passed" : "failed"}</dd>
         <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
@@ -374,6 +390,11 @@ $("#btn-cycle").addEventListener("click", async () => {
   try {
     const result = await api("POST", `/users/${currentUser()}/cycle`);
     $("#cycle-view").innerHTML = cycleCards(result);
+    /* The answer appears below everything already on the page; without this the reader
+       is left looking at the button they just pressed. The jump is deliberate rather
+       than animated: a smooth scroll is silently a no-op where the browser will not
+       animate, and the page then does not move at all. */
+    $("#cycle-view").scrollIntoView({ block: "start" });
   } catch (error) {
     $("#cycle-view").innerHTML = `<div class="note error">${esc(error.message)}</div>`;
   }

@@ -124,6 +124,7 @@
 
 * { box-sizing: border-box; }
 
+
 body {
   margin: 0;
   background: var(--page);
@@ -314,6 +315,20 @@ button.more {
 .tech[open] summary::before { content: "– "; }
 .tech summary:hover { color: var(--ink-2); border-color: var(--muted); }
 .tech dl { margin-top: 12px; }
+.tech .hint { margin-top: 10px; }
+
+/* The stored code, beside the plain meaning it stands for. */
+.raw {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--line-soft);
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+}
+
+.chip .raw { margin-left: 0; }
 
 /* What the system stored, shown as a quotation of the record rather than as the
    explanation — the plain sentences above it are the explanation. */
