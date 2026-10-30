@@ -352,24 +352,6 @@ function cycleCards(result) {
     </div>
     ${planCard(result.plan)}
 
-    ${tech(`<dl>
-      <dt>Assessment</dt>
-      <dd>${(a.adherence_score * 100).toFixed(0)}% adherence over
-          ${a.deviations.length} day${a.deviations.length === 1 ? "" : "s"} off target
-          <span class="raw">${esc(a.proposed_flag)}</span></dd>
-      <dt>Action chosen</dt>
-      <dd>${said(ACTION_SAID, result.action.action_type)}</dd>
-      <dt>Supervisor decision</dt>
-      <dd><span class="chip ${decision.approved ? "good" : "bad"}">
-          ${decision.approved ? "&#10003;" : "&#9888;"}
-          ${esc(DECISION_SAID[decision.decision_type] || decision.decision_type)}</span>
-          <span class="raw">${esc(decision.decision_type)}</span></dd>
-      ${decision.failed_checks.length
-          ? `<dt>Limits not met</dt>
-             <dd><span class="raw">${esc(decision.failed_checks.join(", "))}</span></dd>`
-          : ""}
-      <dt>Stored note</dt><dd>${esc(decision.notes)}</dd>
-    </dl>`)}
     </details>`;
 }
 
