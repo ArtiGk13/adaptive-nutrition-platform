@@ -833,6 +833,22 @@ ul.plain li { margin: 2px 0; }
 
 .meal span { color: var(--muted); }
 
+.remove {
+  margin: -4px -6px -4px 10px;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.14s, color 0.14s, background 0.14s;
+}
+
+.meal:hover .remove, .remove:focus { opacity: 1; }
+.remove:hover { background: var(--critical-wash); color: var(--critical); }
+
 /* ──────────────────────────── tables ───────────────────────────── */
 
 .sheet {

@@ -101,3 +101,34 @@ def test_a_missing_person_is_not_reported_as_a_person_without_a_plan(client):
     without_plan = client.get(f"/users/{user_id}/plan")
     assert without_plan.status_code == 404
     assert "No active plan" in without_plan.json()["detail"]
+
+
+def test_a_log_entry_can_be_taken_back(client):
+    """A mistyped figure was permanent, and it is not harmless: a meal entered as 9000
+    instead of 900 stays in the daily total the Assessment agent averages."""
+    user_id = client.post("/users", json=USER_PAYLOAD).json()["user_id"]
+    entry = client.post(f"/users/{user_id}/logs/meal", json={
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "meal_slot": "lunch",
+        "food_description": "mistyped",
+        "estimated_kcal": 9000,
+    }).json()
+
+    assert client.delete(f"/users/{user_id}/logs/{entry['log_id']}").status_code == 204
+    assert client.get(f"/users/{user_id}/logs").json() == []
+    assert client.delete(f"/users/{user_id}/logs/{entry['log_id']}").status_code == 404
+
+
+def test_one_person_cannot_remove_another_persons_entry(client):
+    """The user id is part of the lookup, not only of the path."""
+    mine = client.post("/users", json=USER_PAYLOAD).json()["user_id"]
+    theirs = client.post("/users", json={**USER_PAYLOAD, "name": "Someone Else"}).json()["user_id"]
+    entry = client.post(f"/users/{theirs}/logs/meal", json={
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "meal_slot": "lunch",
+        "food_description": "theirs",
+        "estimated_kcal": 600,
+    }).json()
+
+    assert client.delete(f"/users/{mine}/logs/{entry['log_id']}").status_code == 404
+    assert len(client.get(f"/users/{theirs}/logs").json()) == 1

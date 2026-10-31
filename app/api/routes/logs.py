@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.api.schemas import ActivityLogCreate, LogRead, MealLogCreate, WeightLogCreate
 from app.db.database import get_session
+from app.db import repository
 from app.services import profile_service
 
 router = APIRouter(prefix="/users/{user_id}/logs", tags=["logs"])
@@ -41,3 +42,15 @@ def log_activity(
 def list_logs(user_id: int, session: Session = Depends(get_session)) -> list[LogRead]:
     _require_user(session, user_id)
     return [LogRead.from_domain(entry) for entry in profile_service.get_logs(session, user_id)]
+
+
+@router.delete("/{log_id}", status_code=204)
+def delete_log(user_id: int, log_id: int, session: Session = Depends(get_session)) -> None:
+    """Correcting a mistake was impossible, and a mistyped figure is not harmless.
+
+    A meal entered as 9000 instead of 900 stays in the daily total the Assessment agent
+    averages, so one slip misstates how closely a plan was followed for a fortnight.
+    """
+    _require_user(session, user_id)
+    if not repository.delete_log_entry(session, user_id, log_id):
+        raise HTTPException(status_code=404, detail=f"No log entry {log_id} for user {user_id}")

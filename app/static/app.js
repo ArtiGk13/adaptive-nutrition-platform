@@ -744,7 +744,10 @@ function entriesCard(logs, showAll) {
       .reduce((sum, e) => sum + (e.details.estimated_kcal || 0), 0);
     const rows = entries.map((e) => {
       const [what, value] = describeEntry(e);
-      return `<div class="meal">${esc(what)}<span>${esc(value)}</span></div>`;
+      return `<div class="meal">${esc(what)}<span>${esc(value)}</span>
+          <button type="button" class="remove" data-log="${e.log_id}"
+                  title="Remove this entry" aria-label="Remove ${esc(what)}">&times;</button>
+        </div>`;
     }).join("");
     return `<details class="day"${index === 0 ? " open" : ""}>
         <summary>
@@ -772,6 +775,22 @@ let allDays = false;
 /* Re-rendered in place when the toggle is used, rather than refetching the lot. */
 function renderEntries(logs) {
   $("#entries-view").innerHTML = entriesCard(logs, allDays);
+
+  /* Correcting a mistake was impossible: a meal entered as 9000 instead of 900 stayed
+     in the daily total the assessment averages. Asked for first, because it is the one
+     action here that cannot be undone. */
+  document.querySelectorAll("#entries-view .remove").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!confirm("Remove this entry from your log?")) return;
+      try {
+        await api("DELETE", `/users/${currentUser()}/logs/${button.dataset.log}`);
+        loadHome();
+      } catch (error) {
+        note("#log-result", error.message, true);
+      }
+    });
+  });
+
   const moreButton = $("#btn-more-days");
   if (moreButton) {
     moreButton.addEventListener("click", () => {

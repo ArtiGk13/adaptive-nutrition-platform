@@ -17,7 +17,8 @@ CLIENT = Path(__file__).resolve().parents[2] / "app" / "static" / "app.js"
 def _calls(script: str) -> list[tuple[str, str]]:
     """The method and path of every api(...) call, with interpolations blanked out."""
     found = []
-    for method, path in re.findall(r'api\(\s*"(GET|POST)",\s*[`"]([^`"]*)[`"]', script):
+    verbs = "GET|POST|PUT|PATCH|DELETE"
+    for method, path in re.findall(rf'api\(\s*"({verbs})",\s*[`"]([^`"]*)[`"]', script):
         found.append((method, re.sub(r"\$\{[^}]*\}", "{}", path)))
     return found
 

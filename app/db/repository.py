@@ -245,6 +245,25 @@ def add_log_entry(session: Session, entry: LogEntry) -> LogEntry:
     return _log_to_domain(row)
 
 
+def delete_log_entry(session: Session, user_id: int, log_id: int) -> bool:
+    """Remove one entry belonging to this user, reporting whether there was one.
+
+    A mistyped figure was permanent, and a meal entered as 9000 instead of 900 stays in
+    the daily total the Assessment agent averages. The user id is part of the lookup so
+    an entry cannot be removed through somebody else's account.
+    """
+    row = (
+        session.query(LogEntryORM)
+        .filter(LogEntryORM.log_id == log_id, LogEntryORM.user_id == user_id)
+        .one_or_none()
+    )
+    if row is None:
+        return False
+    session.delete(row)
+    session.commit()
+    return True
+
+
 def get_logs(session: Session, user_id: int) -> list[LogEntry]:
     rows = session.scalars(
         select(LogEntryORM)
