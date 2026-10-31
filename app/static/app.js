@@ -40,6 +40,14 @@ async function api(method, path, body, headers) {
 
 const $ = (selector) => document.querySelector(selector);
 const list = (value) => value.split(",").map((s) => s.trim()).filter(Boolean);
+/* A mean arrives as a float — 2191.5714285714284 — and was being written to the screen
+   as it stood. Nobody eats to the fourteenth decimal place.
+
+   Rounded, not localised: toLocaleString follows the browser's language rather than the
+   page's, so on a Greek machine 2192 came out as "2.192", which reads as two and a bit.
+   Every other figure on these screens is written plainly, and this one matches them. */
+const kcal = (value) => String(Math.round(value));
+
 const now = () => new Date().toISOString().slice(0, 19);
 const esc = (value) =>
   String(value).replace(/[&<>"]/g, (c) =>
@@ -350,7 +358,7 @@ function cycleCards(result) {
       ${head("1", "Your log")}
       <div class="tiles">
         <div class="tile"><div class="k">Average intake</div>
-             <div class="v">${a.average_daily_kcal} <small>kcal/day</small></div></div>
+             <div class="v">${kcal(a.average_daily_kcal)} <small>kcal/day</small></div></div>
         <div class="tile"><div class="k">Days off target</div>
              <div class="v">${a.deviations.length}</div></div>
       </div>
@@ -627,7 +635,7 @@ function lineChart(days, target, opts) {
 
   const dots = days.map((d, i) =>
     `<circle cx="${x(i).toFixed(1)}" cy="${y(d.value).toFixed(1)}" r="7" fill="transparent">
-       <title>${esc(d.day)} — ${d.value} ${esc(opts.unit)}</title></circle>`).join("");
+       <title>${esc(d.day)} — ${opts.fromZero ? kcal(d.value) : d.value} ${esc(opts.unit)}</title></circle>`).join("");
 
   return `
     <div class="card">
@@ -647,7 +655,7 @@ function lineChart(days, target, opts) {
         <circle cx="${x(days.length - 1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="4"
                 fill="var(--meter-fill)" stroke="var(--surface)" stroke-width="2"/>
         <text x="${(x(days.length - 1) - 8).toFixed(1)}" y="${(y(last.value) - 10).toFixed(1)}"
-              text-anchor="end" font-size="11" fill="var(--ink)">${last.value}</text>
+              text-anchor="end" font-size="11" fill="var(--ink)">${opts.fromZero ? kcal(last.value) : last.value}</text>
         ${dots}
         <text x="${L}" y="${H - 8}" font-size="10" fill="var(--muted)">${esc(days[0].day)}</text>
         <text x="${W - R}" y="${H - 8}" font-size="10" fill="var(--muted)"
