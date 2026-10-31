@@ -385,14 +385,16 @@ button.more {
 
 .chip .raw { margin-left: 0; }
 
-/* What the system stored, shown as a quotation of the record rather than as the
-   explanation — the plain sentences above it are the explanation. */
-.recorded {
-  margin: 12px 0 0;
-  padding-left: 12px;
-  border-left: 2px solid var(--line);
-  color: var(--muted);
-  font-size: 0.84rem;
+/* The answer of the reader's own that caused the refusal, set first and set apart: it
+   is the one thing they will want to know. */
+.trigger {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--critical-wash);
+  color: var(--critical);
+  font-size: 0.92rem;
+  font-weight: 550;
 }
 
 .whoami {

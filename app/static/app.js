@@ -132,9 +132,6 @@ document.querySelectorAll(".nav-item").forEach((item) => {
 
 /* The codes and the stored decision are the audit trail, and worth showing; they are
    not what someone reading their own plan needs first. Folded away, open on request. */
-const tech = (inner) =>
-  `<details class="tech"><summary>What was recorded</summary>
-     <p class="hint">The exact values stored alongside this decision.</p>${inner}</details>`;
 
 /* The stored value names the branch taken. Shown with the plain meaning first, because
    the code is the record and not an explanation. */
@@ -210,15 +207,14 @@ function planCard(plan) {
 
 /* The system records why it refused in its own terms, which is what the stored decision
    needs to say. These translate the same thing for the person reading the screen, keyed
-   on the check that failed; the recorded wording is shown underneath, unaltered. */
+   on the check that failed. */
 const WHY_REFUSED = {
   declared_condition:
-    "You told us about a health condition. Planning around one is a professional's "
-    + "job, not a calculation's.",
+    "Planning around a health condition is a professional's job, not a calculation's.",
   eating_disorder_signal:
-    "One of your answers is something a professional should look at before any plan is "
-    + "made. This is not a diagnosis, and it does not mean anything is wrong — the "
-    + "system refers early on purpose, because that is the safer mistake for it to make.",
+    "That is something a professional should look at before any plan is made. It is not "
+    + "a diagnosis: the system refers early on purpose, because that is the safer "
+    + "mistake for it to make.",
   age_out_of_range:
     "The figures this system works from were established for adults between 18 and 65. "
     + "Outside that range they do not apply.",
@@ -239,21 +235,21 @@ const WHY_REFUSED = {
 };
 
 function refusalCard(decision) {
+  /* The stored sentence names the signal after a colon — "Screening signals require
+     assessment by a specialist: recent weight fluctuation" — and that tail is the part
+     a reader needs: which of their own answers this was about. */
+  const detail = (decision.notes.split(": ")[1] || "").trim();
   const why = decision.failed_checks.map((c) => WHY_REFUSED[c]).filter(Boolean);
+
   return `
     <div class="card refuse">
       ${head("!", "A plan is not the right next step")}
+      ${detail ? `<p class="trigger">${esc(detail)}</p>` : ""}
       ${why.map((line) => `<p>${esc(line)}</p>`).join("")}
-      <p class="recorded">${esc(decision.notes)}</p>
-      <dl>
-        <dt>Decision</dt>
-        <dd><span class="chip bad">&#9888; ${esc(decision.decision_type)}</span></dd>
-        <dt>Failed checks</dt><dd>${esc(decision.failed_checks.join(", ") || "none")}</dd>
-      </dl>
-      <p class="hint">Nothing was saved and no plan was made. What you have told us
-         needs a person to look at it, not a calculation.</p>
+      <p class="hint">Nothing was saved, and no plan was made for you.</p>
     </div>`;
 }
+
 
 /* What the Assessment agent actually found, which is the part that is true whether or
    not a language model is available: the difficulties are computed in code. A generated
