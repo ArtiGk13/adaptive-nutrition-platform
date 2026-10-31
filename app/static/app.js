@@ -420,7 +420,12 @@ $("#btn-load").addEventListener("click", () => loadHome());
 
 
 $("#btn-cycle").addEventListener("click", async () => {
-  $("#cycle-view").innerHTML = `<div class="note">Running the cycle…</div>`;
+  if (!currentUser()) {
+    $("#cycle-view").innerHTML =
+      `<div class="note error">Choose who this is for first.</div>`;
+    return;
+  }
+  $("#cycle-view").innerHTML = `<div class="note">Reviewing your plan…</div>`;
   try {
     const result = await api("POST", `/users/${currentUser()}/cycle`);
     $("#cycle-view").innerHTML = cycleCards(result);
@@ -732,7 +737,14 @@ function renderEntries(logs) {
 
 async function loadHome() {
   const id = currentUser();
-  if (!id) return;
+  if (!id) {
+    $("#plan-view").innerHTML = `<div class="note plain">Choose who this is for above,
+      or create a profile on the New user screen.</div>`;
+    $("#intake-view").innerHTML = "";
+    $("#weight-view").innerHTML = "";
+    $("#entries-view").innerHTML = "";
+    return;
+  }
   showProfile(id);
   let plan = null;
   try {
