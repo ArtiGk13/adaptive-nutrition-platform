@@ -72,8 +72,10 @@ class Coordinator:
         if decision.approved and action.requires_change:
             resulting_plan = repository.save_plan(session, action.new_plan, decision)
 
+        # A refused adjustment did not happen, so the Tutor must not explain it as though
+        # it had: the action's reason describes the proposed target, not the kept one.
         feedback_text = None
-        if action.needs_explanation:
+        if action.needs_explanation and (decision.approved or not action.requires_change):
             feedback_text = await self.tutor.generate_feedback(action, assessment)
 
         return CycleResult(

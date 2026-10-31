@@ -79,6 +79,10 @@ class LLMClient:
                 text = response.json().get("response", "").strip()
         except httpx.HTTPError as error:
             raise LLMUnavailable(f"Ollama request failed: {error}") from error
+        except ValueError as error:
+            # A body that is not JSON (a proxy's error page, say) would otherwise escape
+            # the Tutor's fallback and fail a cycle that has already been stored.
+            raise LLMUnavailable(f"Ollama returned a response that is not JSON: {error}") from error
 
         if not text:
             raise LLMUnavailable("Ollama returned an empty response.")

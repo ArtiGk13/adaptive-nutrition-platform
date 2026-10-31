@@ -48,7 +48,13 @@ const list = (value) => value.split(",").map((s) => s.trim()).filter(Boolean);
    Every other figure on these screens is written plainly, and this one matches them. */
 const kcal = (value) => String(Math.round(value));
 
-const now = () => new Date().toISOString().slice(0, 19);
+/* Local wall-clock time, not UTC: toISOString() is UTC, so in Greece anything logged
+   between midnight and 02:00/03:00 was filed under the previous day, and the Today card
+   kept showing yesterday for those hours. */
+const now = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+};
 const esc = (value) =>
   String(value).replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -155,22 +161,6 @@ document.querySelectorAll(".nav-item").forEach((item) => {
 });
 
 /* ───────────────────────────── rendering ────────────────────────────── */
-
-
-/* The codes and the stored decision are the audit trail, and worth showing; they are
-   not what someone reading their own plan needs first. Folded away, open on request. */
-
-/* The stored value names the branch taken. Shown with the plain meaning first, because
-   the code is the record and not an explanation. */
-const ACTION_SAID = {
-  continue: "Keep the plan as it is",
-  adjust_plan: "Change the daily calorie target",
-  extra_support: "Keep the plan, and offer extra support",
-  refer_specialist: "Stop, and refer to a professional",
-};
-
-const said = (map, value) =>
-  `${esc(map[value] || value)} <span class="raw">${esc(value)}</span>`;
 
 const head = (mark, title) =>
   `<div class="card-head"><span class="stage">${mark}</span><h3>${title}</h3></div>`;
@@ -335,12 +325,16 @@ function cycleCards(result) {
 
   /* What actually happened, in one line, before any of the detail. A reader should not
      have to assemble it from four cards and a code. */
-  const before = result.action.reason.match(/from (\d+) to (\d+)/);
-  const headline = before
-    ? `Your daily target moved from ${before[1]} to ${before[2]} kcal.`
-    : result.action.action_type === "continue"
-      ? "Your plan stays as it is."
-      : "Your plan was reviewed and kept, with extra support suggested.";
+  /* The reason describes the change that was proposed. When the safety checks refuse it,
+     nothing moved, and the screen must not say that it did. */
+  const before = decision.approved && result.action.reason.match(/from (\d+) to (\d+)/);
+  const headline = !decision.approved
+    ? "Your plan stays as it is: the safety checks did not allow a change."
+    : before
+      ? `Your daily target moved from ${before[1]} to ${before[2]} kcal.`
+      : result.action.action_type === "continue"
+        ? "Your plan stays as it is."
+        : "Your plan was reviewed and kept, with extra support suggested.";
 
   return `
     <div class="card summary">
@@ -348,7 +342,9 @@ function cycleCards(result) {
       <p class="hero">${pct}<span class="hero-unit">% adherence</span></p>
       <div class="meter"><span style="width:${pct}%"></span></div>
       <div class="meter-foot"><span>0%</span><span>plan followed exactly</span></div>
-      <p class="lede">${esc(result.feedback_text || result.action.reason)}</p>
+      <p class="lede">${esc(decision.approved
+        ? result.feedback_text || result.action.reason
+        : decision.notes)}</p>
       ${supportBlock(result)}
     </div>
 
@@ -442,9 +438,6 @@ $("#plan-user").addEventListener("change", () => setUser(currentUser()));
 $("#btn-load").addEventListener("click", () => setUser(currentUser()));
 
 
-
-
-
 $("#btn-cycle").addEventListener("click", async () => {
   if (!currentUser()) {
     $("#cycle-view").innerHTML =
@@ -486,7 +479,6 @@ const FLAG_SAID = {
   continue: "on track",
   adjust: "target needs adjusting",
   extra_support: "needs support",
-  refer_specialist: "needs a professional",
 };
 
 function overviewTable(rows) {
@@ -858,7 +850,9 @@ async function loadHome() {
         mark: "⚖", title: "Your weight", unit: "kg",
         needMore: "One weigh-in so far. Add another and the trend appears here.",
         baselineLabel: `target ${plan.target_weight_kg} kg`,
-        caption: (over, total, target) => over
+        /* Judged on the latest weigh-in: counting any day above the target produced
+           "still -1.0 kg above" once the user had gone below it. */
+        caption: (over, total, target) => weights[weights.length - 1].value > target
           ? `${total} weigh-ins, still ${(weights[weights.length - 1].value - target).toFixed(1)} kg above the target of ${target} kg.`
           : `${total} weigh-ins, at or below the target of ${target} kg.`,
       }) : "";
@@ -907,7 +901,6 @@ async function showProfile(id) {
     whoami.hidden = true;
   }
 }
-
 
 
 /* Whether the server is answering at all, which is the difference between an empty
