@@ -11,7 +11,6 @@ Writes into docs/figures/ next to this repository, as both PNG and PDF at 300 dp
 """
 
 import csv
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

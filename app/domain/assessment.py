@@ -7,7 +7,6 @@ class AssessmentFlag(str, Enum):
     CONTINUE = "continue"
     ADJUST = "adjust"
     EXTRA_SUPPORT = "extra_support"
-    REFER_SPECIALIST = "refer_specialist"
 
 
 @dataclass

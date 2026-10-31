@@ -7,7 +7,6 @@ Requires matplotlib, which is not a runtime dependency of the application:
 Writes into docs/figures/ next to this repository, as both PNG and PDF at 300 dpi.
 """
 
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

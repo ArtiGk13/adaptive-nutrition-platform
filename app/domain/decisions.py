@@ -9,7 +9,6 @@ class ActionType(str, Enum):
     CONTINUE = "continue"
     ADJUST_PLAN = "adjust_plan"
     EXTRA_SUPPORT = "extra_support"
-    REFER_SPECIALIST = "refer_specialist"
 
 
 class DecisionType(str, Enum):

@@ -7,7 +7,6 @@ from app.agents.guardrails import (
     run_profile_checks,
 )
 from app.domain.decisions import (
-    ActionType,
     AdaptationAction,
     DecisionType,
     GuardrailCheck,
@@ -22,13 +21,9 @@ from app.logging_config import supervisor_logger
 class SupervisorAgent:
     """Mandatory gate: nothing is persisted or returned without a decision from here."""
 
-    async def validate_plan(
-        self,
-        plan: NutritionPlan,
-        profile: UserProfile,
-        logs: list[LogEntry] | None = None,
-    ) -> SupervisorDecision:
-        results = run_profile_checks(profile, logs or []) + run_plan_checks(plan, profile)
+    async def validate_plan(self, plan: NutritionPlan, profile: UserProfile) -> SupervisorDecision:
+        # A first plan is made before anything has been logged, so there are no logs to pass.
+        results = run_profile_checks(profile, []) + run_plan_checks(plan, profile)
         return self._decide(
             profile=profile,
             results=results,
@@ -43,16 +38,6 @@ class SupervisorAgent:
         results = run_profile_checks(profile, logs)
         if action.new_plan is not None:
             results.extend(run_plan_checks(action.new_plan, profile))
-
-        if action.action_type == ActionType.REFER_SPECIALIST:
-            return self._build(
-                profile=profile,
-                decision_type=DecisionType.FLAG_REFERRAL,
-                checks_passed=not failed(results),
-                notes="The system action leads to a specialist referral.",
-                failed_checks=[result.code for result in failed(results)],
-                checks=results,
-            )
 
         return self._decide(
             profile=profile,

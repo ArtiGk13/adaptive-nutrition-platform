@@ -78,7 +78,7 @@ def test_a_decision_reports_every_check_not_only_the_failures(sample_profile):
 
     async def run():
         plan = await PlannerAgent().create_initial_plan(sample_profile)
-        return await SupervisorAgent().validate_plan(plan, sample_profile, [])
+        return await SupervisorAgent().validate_plan(plan, sample_profile)
 
     decision = asyncio.run(run())
 

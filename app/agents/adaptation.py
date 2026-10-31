@@ -20,12 +20,7 @@ class AdaptationAgent:
     async def decide(
         self, profile: UserProfile, plan: NutritionPlan, assessment: AssessmentResult
     ) -> AdaptationAction:
-        if assessment.proposed_flag == AssessmentFlag.REFER_SPECIALIST:
-            return AdaptationAction(
-                action_type=ActionType.REFER_SPECIALIST,
-                reason="Assessment indicates a specialist referral is needed.",
-            )
-
+        # Referral is not decided here: it is the Supervisor's, from the guardrails.
         if assessment.proposed_flag == AssessmentFlag.EXTRA_SUPPORT:
             return AdaptationAction(
                 action_type=ActionType.EXTRA_SUPPORT,
