@@ -337,6 +337,44 @@ button.more {
 /* the opened body hangs from the bar */
 .review[open] > .card:first-of-type { border-top-left-radius: 0; border-top-right-radius: 0; }
 
+/* Off-screen until it is tabbed to, which is the point: a keyboard user should not have
+   to pass the whole sidebar to reach the screen. */
+.skip {
+  position: absolute;
+  left: -9999px;
+  z-index: 20;
+  padding: 10px 16px;
+  border-radius: 0 0 10px 0;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.skip:focus { left: 0; top: 0; }
+
+.noscript {
+  margin: 0;
+  padding: 14px 20px;
+  background: var(--critical-wash);
+  color: var(--critical);
+  font-size: 0.9rem;
+}
+
+.noscript a { color: inherit; }
+
+footer {
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+footer p { margin: 0 0 6px; max-width: 70ch; }
+footer p:last-child { margin: 0; }
+footer strong { color: var(--ink-2); font-weight: 600; }
+
 .checks { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 7px; }
 
 .checks li {

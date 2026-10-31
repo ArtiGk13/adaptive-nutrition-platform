@@ -67,8 +67,12 @@ def test_the_page_fetches_no_external_asset(client):
     """Everything is drawn or styled in place, so the client works with no network."""
     page = client.get("/").text
     assert "<img" not in page
-    assert "http://" not in page and "https://" not in page.replace(
-        'xmlns="http://www.w3.org/2000/svg"', "")
+
+    # The SVG namespace is an identifier, not an address: nothing is fetched from it,
+    # and it appears in the icon as well as in the drawings.
+    without_namespace = page.replace("http://www.w3.org/2000/svg", "")
+    assert "http://" not in without_namespace
+    assert "https://" not in without_namespace
 
 
 def test_narrow_screens_keep_the_theme_control(client):
