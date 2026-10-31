@@ -18,19 +18,22 @@ API documentation, and run an adaptation cycle for the seeded user.
 ## Web client
 
 A small client is served at the root from `app/static/`: plain HTML, CSS and JavaScript,
-with no framework and no build step, so nothing is added to `requirements.txt`. It holds
-no logic of its own — it calls the same endpoints any other caller would, and renders the
+with no framework and no build step, so nothing is added to `requirements.txt`. It makes
+no decision of its own: it calls the same endpoints any other caller would, and renders the
 four stages of a cycle (assessment, adaptation, Supervisor decision, resulting plan) as
 they are returned.
 
-Three screens. Profile creation requests a plan and shows either the plan or the
-Supervisor's refusal, naming the answer that caused it. The user's own screen carries the
-active plan with its macronutrient split, intake against the target and weight over time
-drawn from the logged entries, the log itself grouped by day, a form for all three kinds
-of entry, and the adaptation cycle — which opens with what changed in one sentence and
-keeps the four stages, including which safety limits were tested, behind a disclosure.
-The dietitian's screen lists everyone being planned for, filters to those needing a
-referral, and opens one person's full decision trail.
+Three screens. Profile creation asks the medical history and screening questions with the
+usual figures, requests a plan, and shows either the plan or the Supervisor's refusal,
+naming the answer that caused it. The user's own screen starts with what is left of today,
+meal by meal. Below it are the active plan with its macronutrient split, intake against the
+target, weight against the target weight on a weight-loss plan, and the log grouped by day,
+where a mistaken entry can be removed. Both charts cover the fortnight the review reads. One
+form takes all three kinds of entry. Reviewing the plan runs the adaptation cycle, which
+opens with one sentence on what changed, or that nothing did because a safety check refused
+it, and keeps the four stages, including which limits were tested, behind a disclosure. The
+dietitian's screen lists everyone being planned for, filters to those needing a referral,
+and opens one person's full decision trail.
 
 Tests:
 
@@ -313,7 +316,7 @@ app/
 ├── evaluation/  synthetic scenarios, simulation and comparison metrics
 ├── api/         Pydantic schemas and FastAPI routes
 └── static/      the web client: one page, one stylesheet, one script
-scripts/         synthetic user seeding, evaluation runner
+scripts/         synthetic user seeding, evaluation runner, the two figures, review sample
 tests/           unit / integration / system
 ```
 
