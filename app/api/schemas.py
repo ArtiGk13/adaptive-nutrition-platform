@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.agents.coordinator import CycleResult
 from app.domain.assessment import AssessmentFlag, AssessmentResult
@@ -32,11 +32,21 @@ class ScreeningAnswers(BaseModel):
 
 
 class UserCreate(BaseModel):
-    name: str
-    age: int
+    """Bounds here are sanity, not clinical judgement.
+
+    Nothing validated the incoming numbers, so a profile could be stored with a negative
+    height or an age of zero. The guardrails then refused to plan for it, which reads
+    like a safety net but is not one: they examine what a plan would demand of a person,
+    not whether the person was described coherently, and they do not see log entries at
+    all. The limits below are the ones outside which a figure cannot describe an adult
+    human being; the clinical range is the dietitian's and lives in the guardrails.
+    """
+
+    name: str = Field(min_length=1, max_length=120)
+    age: int = Field(ge=1, le=120)
     sex: Sex
-    height_cm: float
-    weight_kg: float
+    height_cm: float = Field(gt=0, le=300)
+    weight_kg: float = Field(gt=0, le=500)
     activity_level: ActivityLevel
     goal_type: GoalType
     role: Role = Role.USER
@@ -145,9 +155,12 @@ class PlanRead(BaseModel):
 
 class MealLogCreate(BaseModel):
     timestamp: datetime
-    meal_slot: str
-    food_description: str
-    estimated_kcal: int
+    meal_slot: str = Field(min_length=1)
+    food_description: str = Field(min_length=1, max_length=300)
+    # A negative figure here is not refused anywhere downstream: it enters the daily
+    # total, lowers the average, and the Assessment agent reports an adherence computed
+    # from it as though it were a record of eating.
+    estimated_kcal: int = Field(ge=0, le=20000)
     estimated_macros: dict[str, int] = {}
 
     def to_domain(self, user_id: int) -> MealLogEntry:
@@ -163,7 +176,7 @@ class MealLogCreate(BaseModel):
 
 class WeightLogCreate(BaseModel):
     timestamp: datetime
-    weight_kg: float
+    weight_kg: float = Field(gt=0, le=500)
 
     def to_domain(self, user_id: int) -> WeightLogEntry:
         return WeightLogEntry(user_id=user_id, timestamp=self.timestamp, weight_kg=self.weight_kg)
@@ -171,9 +184,9 @@ class WeightLogCreate(BaseModel):
 
 class ActivityLogCreate(BaseModel):
     timestamp: datetime
-    activity_type: str
-    duration_min: int
-    estimated_kcal_burned: int
+    activity_type: str = Field(min_length=1, max_length=120)
+    duration_min: int = Field(ge=0, le=1440)
+    estimated_kcal_burned: int = Field(ge=0, le=20000)
 
     def to_domain(self, user_id: int) -> ActivityLogEntry:
         return ActivityLogEntry(

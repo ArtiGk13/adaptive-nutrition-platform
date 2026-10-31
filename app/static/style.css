@@ -661,10 +661,6 @@ button.primary:hover { opacity: 0.88; }
 .toolbar label { flex: 0 0 112px; }
 .toolbar .spacer { flex: 1 1 auto; }
 
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(282px, 1fr)); gap: 16px; }
-.two-col form { margin: 0; }
-.two-col .form-section .grid { margin-top: 0; }
-.two-col label + label { margin-top: 13px; }
 
 /* ──────────────────────────── cards ────────────────────────────── */
 

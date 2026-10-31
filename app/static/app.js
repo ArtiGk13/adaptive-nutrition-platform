@@ -3,6 +3,26 @@
 /* A thin client over the REST API. It holds no state of its own beyond the user id
    typed into each panel: everything shown here is what an endpoint returned. */
 
+/* A rejected field comes back as a list of objects naming the field and the rule it
+   broke. Rendered as it arrives, the reader is shown JSON; what they need is which box
+   on the form to correct. */
+function readProblem(payload, fallback) {
+  const detail = payload && payload.detail;
+  if (typeof detail === "string") return detail;
+  if (!Array.isArray(detail)) return fallback;
+
+  return detail.map((item) => {
+    const field = (item.loc || []).filter((p) => p !== "body").join(" ");
+    const rule = String(item.msg || "")
+      .replace(/^Value error, /, "")
+      .replace(/^String should have at least 1 character$/, "cannot be empty")
+      .replace(/^Input should be greater than ([\d.]+)$/, "must be more than $1")
+      .replace(/^Input should be greater than or equal to ([\d.]+)$/, "must be at least $1")
+      .replace(/^Input should be less than or equal to ([\d.]+)$/, "must be at most $1");
+    return field ? `${field}: ${rule}` : rule;
+  }).join(". ");
+}
+
 async function api(method, path, body, headers) {
   const options = { method, headers: Object.assign({}, headers) };
   if (body !== undefined) {
@@ -13,8 +33,7 @@ async function api(method, path, body, headers) {
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    const detail = payload && payload.detail ? payload.detail : response.statusText;
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    throw new Error(readProblem(payload, response.statusText));
   }
   return payload;
 }
