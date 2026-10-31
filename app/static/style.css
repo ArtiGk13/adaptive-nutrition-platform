@@ -363,15 +363,21 @@ button.more {
 
 .noscript a { color: inherit; }
 
+/* Both lines reach the rule above them. They were capped at 70ch, which at this size is
+   about half that width, so the footer read as belonging to something narrower than the
+   page. Setting them in two columns was worse: the content column is not wide enough to
+   hold these two sentences side by side, so the second dropped below and sat alone
+   against the right edge. */
 footer {
-  margin-top: 44px;
+  margin-top: 48px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.82rem;
+  line-height: 1.65;
 }
 
-footer p { margin: 0 0 6px; max-width: 70ch; }
+footer p { margin: 0 0 7px; }
 footer p:last-child { margin: 0; }
 footer strong { color: var(--ink-2); font-weight: 600; }
 
