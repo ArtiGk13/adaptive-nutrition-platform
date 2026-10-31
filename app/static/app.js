@@ -786,6 +786,7 @@ async function loadHome() {
   if (!id) {
     $("#plan-view").innerHTML = `<div class="note plain">Choose who this is for above,
       or create a profile on the New user screen.</div>`;
+    $("#today-view").innerHTML = "";
     $("#intake-view").innerHTML = "";
     $("#weight-view").innerHTML = "";
     $("#entries-view").innerHTML = "";
@@ -801,6 +802,7 @@ async function loadHome() {
   }
   try {
     const logs = await api("GET", `/users/${id}/logs`);
+    $("#today-view").innerHTML = plan ? todayCard(plan, logs) : "";
 
     $("#intake-view").innerHTML = plan ? lineChart(dailyIntake(logs), plan.calorie_target, {
       mark: "↗", title: "What you have been eating", unit: "kcal", fromZero: true,
@@ -949,3 +951,46 @@ logForm.addEventListener("submit", async (event) => {
 });
 
 showFields("meal");
+
+/* ─────────────────────────────── today ─────────────────────────────── */
+
+/* Everything else on this screen looks back over a fortnight. The question someone
+   opens a nutrition app with is what is left of today, and both halves of the answer
+   were already here: the plan says what the day allows and how it is meant to be
+   divided, and the log says what has been eaten. Nothing had put the two together. */
+
+function todayCard(plan, logs) {
+  const today = now().slice(0, 10);
+  const meals = logs.filter((e) => e.type === "meal" && e.timestamp.slice(0, 10) === today);
+  const eaten = meals.reduce((sum, e) => sum + (e.details.estimated_kcal || 0), 0);
+  const left = plan.calorie_target - eaten;
+  const used = Math.min(100, Math.round((eaten / plan.calorie_target) * 100));
+
+  const slots = plan.meal_structure.map((slot) => {
+    const logged = meals
+      .filter((e) => e.details.meal_slot === slot.slot_name)
+      .reduce((sum, e) => sum + (e.details.estimated_kcal || 0), 0);
+    const delta = logged - slot.target_kcal;
+    return `<div class="slot${logged ? "" : " untouched"}">
+        <span class="slot-name">${esc(slot.slot_name)}</span>
+        <span class="slot-plan">${slot.target_kcal} planned</span>
+        <span class="slot-logged">${logged ? kcal(logged) + " logged" : "nothing yet"}</span>
+        <span class="slot-delta">${logged
+          ? (delta > 0 ? `+${kcal(delta)}` : delta < 0 ? kcal(delta) : "on target")
+          : ""}</span>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="card">
+      ${head("\u2600", "Today")}
+      <p class="hero">${kcal(eaten)}<span class="hero-unit">
+        of ${kcal(plan.calorie_target)} kcal</span></p>
+      <div class="meter"><span style="width:${used}%"></span></div>
+      <div class="meter-foot">
+        <span>${meals.length} ${meals.length === 1 ? "meal" : "meals"} logged</span>
+        <span>${left >= 0 ? `${kcal(left)} left` : `${kcal(-left)} over`}</span>
+      </div>
+      <div class="slots">${slots}</div>
+    </div>`;
+}

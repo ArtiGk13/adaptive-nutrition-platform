@@ -381,6 +381,28 @@ footer p { margin: 0 0 7px; }
 footer p:last-child { margin: 0; }
 footer strong { color: var(--ink-2); font-weight: 600; }
 
+/* The day's meals against the division the plan set for them. Four short columns, so
+   each is sized to its contents rather than sharing the width evenly. */
+.slots { display: grid; gap: 6px; margin-top: 18px; }
+
+.slot {
+  display: grid;
+  grid-template-columns: minmax(5rem, auto) auto 1fr auto;
+  align-items: baseline;
+  gap: 14px;
+  padding: 9px 13px;
+  background: var(--raised);
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  font-size: 0.86rem;
+}
+
+.slot.untouched { opacity: 0.62; }
+.slot-name { font-weight: 550; }
+.slot-plan, .slot-logged { color: var(--muted); font-size: 0.82rem; }
+.slot-logged { text-align: left; }
+.slot-delta { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
 .checks { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 7px; }
 
 .checks li {
