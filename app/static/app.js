@@ -549,10 +549,15 @@ $("#btn-make-pro").addEventListener("click", async () => {
 async function showHistory(userId) {
   try {
     const h = await api("GET", `/nutritionist/users/${userId}`, undefined, asNutritionist());
-    const decisions = h.decisions.map((d) => `
-      <tr><td class="num">${esc(d.cycle_timestamp.slice(0, 10))}</td>
-          <td>${esc(DECISION_SAID[d.decision_type] || d.decision_type)}</td>
-          <td><span class="chip ${d.approved ? "good" : "bad"}">
+    /* Newest first, and capped: a cycle can be run as often as someone presses the
+       button, so a trail reaches dozens of rows quickly and the row that matters — the
+       last one — was at the bottom of all of them. */
+    const RECENT = 10;
+    const ordered = [...h.decisions].reverse();
+    const decisions = ordered.slice(0, RECENT).map((d) => `
+      <tr><td class="num col-when">${esc(d.cycle_timestamp.slice(0, 10))}</td>
+          <td class="col-did">${esc(DECISION_SAID[d.decision_type] || d.decision_type)}</td>
+          <td class="col-outcome"><span class="chip ${d.approved ? "good" : "bad"}">
               ${d.approved ? "&#10003; approved" : "&#9888; refused"}</span></td>
           <td class="recorded-cell">${esc(d.notes)}</td></tr>`).join("");
     $("#pro-history").innerHTML = `
@@ -564,10 +569,14 @@ async function showHistory(userId) {
           <dt>Decisions recorded</dt><dd>${h.decisions.length}</dd>
         </dl>
         <table>
-          <thead><tr><th>when</th><th>what the system did</th><th>outcome</th>
-                     <th>recorded</th></tr></thead>
+          <thead><tr><th class="col-when">when</th><th class="col-did">what happened</th>
+                     <th class="col-outcome">outcome</th><th>recorded</th></tr></thead>
           <tbody>${decisions}</tbody>
         </table>
+        ${ordered.length > RECENT
+          ? `<p class="hint">Showing the most recent ${RECENT} of ${ordered.length}
+               decisions.</p>`
+          : ""}
       </div>`;
   } catch (error) {
     $("#pro-history").innerHTML = `<div class="note error">${esc(error.message)}</div>`;

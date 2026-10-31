@@ -793,6 +793,14 @@ th {
 
 td { padding: 11px 10px; border-bottom: 1px solid var(--line-soft); }
 td.num { font-variant-numeric: tabular-nums; }
+
+/* The decision trail has one long column and three short ones. Left to share the width
+   evenly, the date broke across two lines, the heading above it did, and so did the
+   chip — three of the four columns wrapping to make room for the one that needed it. */
+.col-when { width: 1%; white-space: nowrap; }
+.col-did { width: 1%; white-space: nowrap; }
+.col-outcome { width: 1%; }
+.col-outcome .chip { white-space: nowrap; }
 td.recorded-cell { color: var(--muted); font-size: 0.82rem; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr { cursor: pointer; transition: background 0.12s; }
