@@ -255,10 +255,13 @@ const WHY_REFUSED = {
 };
 
 function refusalCard(decision) {
-  /* The stored sentence names the signal after a colon — "Screening signals require
-     assessment by a specialist: recent weight fluctuation" — and that tail is the part
-     a reader needs: which of their own answers this was about. */
-  const detail = (decision.notes.split(": ")[1] || "").trim();
+  /* The part a reader needs is which of their own answers this was about. The screening
+     message names it after a colon ("…by a specialist: recent weight fluctuation"); the
+     condition message names it in brackets ("Declared medical condition (type 2
+     diabetes) requires…"), and was not shown at all. */
+  const afterColon = decision.notes.split(": ")[1];
+  const inBrackets = (decision.notes.match(/\(([^)]+)\)/) || [])[1];
+  const detail = (afterColon || inBrackets || "").trim();
   const why = decision.failed_checks.map((c) => WHY_REFUSED[c]).filter(Boolean);
 
   return `
@@ -266,7 +269,8 @@ function refusalCard(decision) {
       ${head("!", "A plan is not the right next step")}
       ${detail ? `<p class="trigger">${esc(detail)}</p>` : ""}
       ${why.map((line) => `<p>${esc(line)}</p>`).join("")}
-      <p class="hint">Nothing was saved, and no plan was made for you.</p>
+      <p class="hint">No plan was made for you. Your profile and this decision are kept, so
+        the dietitian can see why.</p>
     </div>`;
 }
 
