@@ -4,6 +4,10 @@ Each scenario is run under two strategies that produce structurally identical ou
 a plan plus feedback — so the only thing distinguishing them is whether the plan was
 adapted. The reviewer sees the cases shuffled and unlabelled; the answer key is written
 separately and must not be shared with them.
+
+The sample the dietitian reviewed (data/review/) was built on 6 October 2026, when there
+were six scenarios, so it held twelve cases. Two scenarios were added later and one of
+them is refused at onboarding, so running this now gives fourteen cases, not those twelve.
 """
 
 import argparse
@@ -35,6 +39,10 @@ async def build_cases(weeks: int, provider: str) -> list[dict]:
     for scenario in SCENARIOS:
         for strategy in REVIEWED_STRATEGIES:
             run = await simulate(scenario, strategy, weeks=weeks)
+            if run.refused_at_onboarding:
+                # No plan was issued, so there is nothing for a reviewer to rate.
+                print(f"  skipped, refused at onboarding: {scenario.name} / {strategy.value}")
+                continue
             plan, assessment, action = run.final_plan, run.final_assessment, run.final_action
             if assessment is None or action is None:
                 raise RuntimeError(f"{scenario.name}/{strategy.value} produced no end state")

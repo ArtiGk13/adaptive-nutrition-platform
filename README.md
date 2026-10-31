@@ -320,7 +320,9 @@ tests/           unit / integration / system
 ## Technologies
 
 Python 3.11+, FastAPI, SQLAlchemy with SQLite, pytest. The database is configured in `.env`
-(`DATABASE_URL`); moving to another engine is a connection-string change, not a code change.
+(`DATABASE_URL`); moving to another engine is mainly a connection-string change. The text
+column lengths in `app/db/models.py` have only been exercised on SQLite, which does not
+enforce them, so they should be checked before using an engine that does.
 
 ## Next steps
 
