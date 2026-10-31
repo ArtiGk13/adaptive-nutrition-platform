@@ -408,7 +408,9 @@ $("#form-user").addEventListener("submit", async (event) => {
     const user = await api("POST", "/users", body);
     const outcome = await api("POST", `/users/${user.user_id}/plan`);
     rememberUser(user);
-    fillPicker();
+    /* the list before the selection, or the new profile is not in it to be selected */
+    await fillPicker();
+    await setUser(user.user_id);
     $("#onboard-result").innerHTML =
       `<div class="note">Profile created — you are user ${user.user_id}.</div>` +
       (outcome.plan ? planCard(outcome.plan) : refusalCard(outcome.supervisor_decision));
@@ -421,7 +423,20 @@ $("#form-user").addEventListener("submit", async (event) => {
 
 const currentUser = () => Number($("#plan-user").value);
 
-$("#btn-load").addEventListener("click", () => loadHome());
+/* Two controls name the same person, and the label naming them was refreshed only when
+   the screen reloaded. Choosing Eleni in the list, then typing 4 in the box, then
+   pressing review ran Maria's cycle under Eleni's name — the one failure this screen
+   must not have. The box is the single answer to "who", the list writes into it, and
+   nothing acts on an identity the screen has not caught up with. */
+function setUser(id) {
+  $("#plan-user").value = id;
+  const pick = $("#plan-pick");
+  pick.value = [...pick.options].some((o) => o.value === String(id)) ? String(id) : "";
+  return loadHome();
+}
+
+$("#plan-user").addEventListener("change", () => setUser(currentUser()));
+$("#btn-load").addEventListener("click", () => setUser(currentUser()));
 
 
 
@@ -433,6 +448,7 @@ $("#btn-cycle").addEventListener("click", async () => {
       `<div class="note error">Choose who this is for first.</div>`;
     return;
   }
+  await setUser(currentUser());
   $("#cycle-view").innerHTML = `<div class="note">Reviewing your plan…</div>`;
   try {
     const result = await api("POST", `/users/${currentUser()}/cycle`);
@@ -837,8 +853,7 @@ async function fillPicker() {
 
 $("#plan-pick").addEventListener("change", (event) => {
   if (!event.target.value) return;
-  $("#plan-user").value = event.target.value;
-  loadHome();
+  setUser(Number(event.target.value));
 });
 
 /* The screen should say whose plan it is, not only which number it belongs to. */

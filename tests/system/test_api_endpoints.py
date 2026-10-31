@@ -88,3 +88,16 @@ def test_a_meal_cannot_carry_negative_energy(client):
         "estimated_kcal": -5000,
     })
     assert response.status_code == 422
+
+
+def test_a_missing_person_is_not_reported_as_a_person_without_a_plan(client):
+    """Both answered "No active plan for user N", which reads as though the account
+    exists and merely has nothing issued to it."""
+    missing = client.get("/users/999999/plan")
+    assert missing.status_code == 404
+    assert "not found" in missing.json()["detail"]
+
+    user_id = client.post("/users", json=USER_PAYLOAD).json()["user_id"]
+    without_plan = client.get(f"/users/{user_id}/plan")
+    assert without_plan.status_code == 404
+    assert "No active plan" in without_plan.json()["detail"]

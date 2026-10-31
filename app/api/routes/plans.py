@@ -26,6 +26,15 @@ async def create_initial_plan(
 
 @router.get("", response_model=PlanRead)
 def get_active_plan(user_id: int, session: Session = Depends(get_session)) -> PlanRead:
+    """Distinguish a person without a plan from a person who does not exist.
+
+    Both answered "No active plan for user N", which reads as though the account is
+    there and merely has nothing issued to it. The other routes under this prefix
+    already separate the two.
+    """
+    if repository.get_user(session, user_id) is None:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+
     plan = repository.get_active_plan(session, user_id)
     if plan is None:
         raise HTTPException(status_code=404, detail=f"No active plan for user {user_id}")
