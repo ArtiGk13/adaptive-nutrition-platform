@@ -725,6 +725,13 @@ button.primary:hover { opacity: 0.88; }
 }
 
 .toolbar label { flex: 0 0 112px; }
+
+.toolbar-note {
+  flex: 1 0 100%;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
 .toolbar .spacer { flex: 1 1 auto; }
 
 

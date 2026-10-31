@@ -108,3 +108,14 @@ def test_the_client_is_not_cached_indefinitely(client):
     an edit looks as though it did nothing."""
     for path in ("/", "/app.js", "/style.css"):
         assert client.get(path).headers.get("cache-control") == "no-cache", path
+
+
+def test_the_stated_review_window_matches_the_one_used(client):
+    """The screen tells the reader the review reads the last two weeks. That number
+    lives in the Assessment agent, and prose drifts away from a constant silently."""
+    from app.agents.assessment import ASSESSMENT_WINDOW_DAYS
+
+    page = client.get("/").text
+    spelled = {7: "one week", 14: "two weeks", 21: "three weeks", 28: "four weeks"}
+    assert ASSESSMENT_WINDOW_DAYS in spelled, "no wording for this window length"
+    assert f"last {spelled[ASSESSMENT_WINDOW_DAYS]}" in page
