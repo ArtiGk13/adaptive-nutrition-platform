@@ -461,18 +461,31 @@ const DECISION_SAID = {
   flag_referral: "Refused, and referred",
 };
 
+/* What the last assessment concluded, in the words a dietitian scanning a caseload
+   would use rather than the value stored. */
+const FLAG_SAID = {
+  continue: "on track",
+  adjust: "target needs adjusting",
+  extra_support: "needs support",
+  refer_specialist: "needs a professional",
+};
+
 function overviewTable(rows) {
   if (!rows.length) return `<div class="note plain">No users to show.</div>`;
   const body = rows.map((r) => `
     <tr data-user="${r.user_id}">
       <td class="num">${r.user_id}</td>
       <td>${esc(r.name)}</td>
-      <td>${esc(r.goal_type)}</td>
+      <td>${esc(r.goal_type.replace(/_/g, " "))}</td>
       <td class="num">${r.calorie_target === null ? "—" : r.calorie_target + " kcal"}</td>
-      <td class="num">${(r.adherence_level * 100).toFixed(0)}%</td>
+      ${/* nothing to adhere to without a plan: a zero here reads as a failure to keep
+             to one */""}
+      <td class="num">${r.calorie_target === null
+          ? "—" : (r.adherence_level * 100).toFixed(0) + "%"}</td>
       <td>${r.needs_referral
             ? `<span class="chip bad">&#9888; needs referral</span>`
-            : `<span class="chip">${esc(r.latest_flag || "no decision yet")}</span>`}</td>
+            : `<span class="chip">${esc(FLAG_SAID[r.latest_flag]
+              || r.latest_flag || "no decision yet")}</span>`}</td>
     </tr>`).join("");
   return `<div class="sheet"><table>
       <thead><tr><th>id</th><th>name</th><th>goal</th><th>target</th>
