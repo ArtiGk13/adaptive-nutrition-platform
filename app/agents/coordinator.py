@@ -85,7 +85,13 @@ class Coordinator:
             support_text=await self._support(profile, action, assessment, resulting_plan),
         )
 
-    async def _support(self, profile, action, assessment, plan) -> str | None:
+    async def _support(
+        self,
+        profile: UserProfile,
+        action: AdaptationAction,
+        assessment: AssessmentResult,
+        plan: NutritionPlan | None,
+    ) -> str | None:
         """The content the Tutor offers when the chosen action is to offer support.
 
         Without this the action named support and delivered none: the agent could write

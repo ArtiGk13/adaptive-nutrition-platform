@@ -2,6 +2,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
+from starlette.types import Scope
 
 from app.api.routes import cycle, logs, nutritionist, plans, users
 from app.db.database import create_tables
@@ -37,7 +39,7 @@ class RevalidatedStatics(StaticFiles):
     with 304 and not resent.
     """
 
-    async def get_response(self, path, scope):
+    async def get_response(self, path: str, scope: Scope) -> Response:
         response = await super().get_response(path, scope)
         response.headers["Cache-Control"] = "no-cache"
         return response

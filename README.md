@@ -23,9 +23,14 @@ no logic of its own — it calls the same endpoints any other caller would, and 
 four stages of a cycle (assessment, adaptation, Supervisor decision, resulting plan) as
 they are returned.
 
-Three screens: profile creation, which requests a plan and shows either the plan or the
-Supervisor's refusal; the user's own plan, logging and cycle; and the dietitian's view of
-every user, those needing referral, and the full decision trail for one user.
+Three screens. Profile creation requests a plan and shows either the plan or the
+Supervisor's refusal, naming the answer that caused it. The user's own screen carries the
+active plan with its macronutrient split, intake against the target and weight over time
+drawn from the logged entries, the log itself grouped by day, a form for all three kinds
+of entry, and the adaptation cycle — which opens with what changed in one sentence and
+keeps the four stages, including which safety limits were tested, behind a disclosure.
+The dietitian's screen lists everyone being planned for, filters to those needing a
+referral, and opens one person's full decision trail.
 
 Tests:
 
