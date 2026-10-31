@@ -119,3 +119,14 @@ def test_the_stated_review_window_matches_the_one_used(client):
     spelled = {7: "one week", 14: "two weeks", 21: "three weeks", 28: "four weeks"}
     assert ASSESSMENT_WINDOW_DAYS in spelled, "no wording for this window length"
     assert f"last {spelled[ASSESSMENT_WINDOW_DAYS]}" in page
+
+
+def test_the_client_charts_the_window_the_review_reads(client):
+    """The charts drew every day ever logged while the review read the last fortnight,
+    so one screen described two different periods: fifteen days of overeating above a
+    review that had counted one. The client cannot import the constant, so it repeats
+    it, and this holds the two together."""
+    from app.agents.assessment import ASSESSMENT_WINDOW_DAYS
+
+    script = client.get("/app.js").text
+    assert f"const REVIEW_WINDOW_DAYS = {ASSESSMENT_WINDOW_DAYS};" in script

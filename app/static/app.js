@@ -208,7 +208,10 @@ function macroSplit(macros) {
     </div>`;
 }
 
-function planCard(plan) {
+/* Used in three places and carrying a hardcoded "4" in all of them, because it was
+   written for the fourth step of the review. On the other two it was a numeral beside a
+   heading with nothing to be the fourth of. */
+function planCard(plan, mark) {
   const m = plan.macro_targets;
   const meals = plan.meal_structure
     .map((slot) => `<div class="meal">${esc(slot.slot_name)}
@@ -216,7 +219,7 @@ function planCard(plan) {
     .join("");
   return `
     <div class="card">
-      ${head("4", `Your plan &middot; version ${plan.version}`)}
+      ${head(mark || "▤", `Your plan &middot; version ${plan.version}`)}
       <div class="tiles">
         <div class="tile"><div class="k">Daily energy</div>
              <div class="v">${plan.calorie_target} <small>kcal</small></div></div>
@@ -373,7 +376,7 @@ function cycleCards(result) {
       ${checkList(decision)}
 
     </div>
-    ${planCard(result.plan)}
+    ${planCard(result.plan, "4")}
 
     </details>`;
 }
@@ -625,9 +628,26 @@ $("#fill-example").addEventListener("click", () => {
    the reference, not a second series. Only the last point is labelled — a value on
    every point is noise — and each carries a title for the pointer. */
 
+/* The charts showed every day ever logged while the review read only the most recent
+   fortnight, so the two described different periods on the same screen: fifteen days of
+   overeating above a review that had counted one. They show the window the review reads.
+
+   The number is the Assessment agent's ASSESSMENT_WINDOW_DAYS, repeated here because
+   the client cannot import it; a test holds the two together. */
+const REVIEW_WINDOW_DAYS = 14;
+
+function withinReviewWindow(entries) {
+  if (!entries.length) return entries;
+  const latest = entries.reduce((a, b) => (a.timestamp > b.timestamp ? a : b)).timestamp;
+  const cutoff = new Date(latest.slice(0, 10));
+  cutoff.setDate(cutoff.getDate() - (REVIEW_WINDOW_DAYS - 1));
+  const from = cutoff.toISOString().slice(0, 10);
+  return entries.filter((entry) => entry.timestamp.slice(0, 10) >= from);
+}
+
 function dailyIntake(logs) {
   const byDay = new Map();
-  for (const entry of logs) {
+  for (const entry of withinReviewWindow(logs)) {
     if (entry.type !== "meal") continue;
     const day = entry.timestamp.slice(0, 10);
     byDay.set(day, (byDay.get(day) || 0) + (entry.details.estimated_kcal || 0));
@@ -703,7 +723,7 @@ function lineChart(days, target, opts) {
 }
 
 function weightSeries(logs) {
-  return logs.filter((e) => e.type === "weight")
+  return withinReviewWindow(logs).filter((e) => e.type === "weight")
     .map((e) => ({ day: e.timestamp.slice(0, 10), value: e.details.weight_kg }))
     .sort((a, b) => a.day.localeCompare(b.day));
 }
